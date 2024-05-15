@@ -4,17 +4,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
+using Unity.Burst.Intrinsics;
+using static UnityEngine.GraphicsBuffer;
+
 public class Program : MonoBehaviour {
 
+    public AudioSource audioSource; 
     public GameObject cube_prefab;
     public GameObject cube_group;
     private bool instantiated = false;
     public Slider slider;
     private GameObject[] cube_array;
-    private float[] heights;
+    public float[] heights;
     public Dropdown algorithms;
     private bool clicked = false, sorted = false, merged = false, test = false, reverse = false;
-    private int i_b, i_i, j_b, j_i, i_s, i_g, i_c, ms_count = 0 ,swaps = 0, middle = 0;
+    private int i_b, i_i, j_b, j_i, i_s, swaps = 0;
     public Material mat_blue, mat_white;
     public Text swap_count_text, slider_text;
 
@@ -25,15 +29,13 @@ public class Program : MonoBehaviour {
 
     private Thread t1;
 
-    private void Start() {
+    private void Awake() {
 
         i_b = 0;
         j_b = 0;
         i_i = 1;
         j_i = i_i - 1;
         i_s = 0;
-        i_g = 0;
-        i_c = 0;
 
         RenderBars((int)slider.value);
     }
@@ -69,15 +71,6 @@ public class Program : MonoBehaviour {
                 SelectionSort();
                 break;
             case "Quick Sort":
-                SelectionSort();
-                break;
-            case "Radix Sort (LSD)":
-                SelectionSort();
-                break;
-            case "Radix Sort (MSD)":
-                SelectionSort();
-                break;
-            case "Shell Sort":
                 SelectionSort();
                 break;
             default:
@@ -133,7 +126,6 @@ public class Program : MonoBehaviour {
     }
 
     private void SelectionSort() {  
-
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
         Array.Sort(temp);
@@ -158,57 +150,67 @@ public class Program : MonoBehaviour {
         }
     }
 
-    private void HeapSort()
+    public void HeapSort()
     {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);
+        //Array.Sort(temp);
 
-        for (int i = heights.Length / 2 - 1; i >= 0; i--)
+        int n = temp.Length;
+
+        // Build heap (rearrange array)
+        for (int i = n / 2 - 1; i >= 0; i--)
         {
-            Heapify(heights, heights.Length, i);
+            Heapify(heights, n, i);
         }
 
-        for (int i = heights.Length - 1; i > 0; i--)
+        // One by one extract an element from heap
+        for (int i = n - 1; i >= 0; i--)
         {
-            float t = heights[0];
-            heights[0] = heights[i];
-            heights[i] = t;
-            Swap(0, i);
-            Heapify(heights, i, 0);
-        }
+            // Move current root to end
+            float temp1 = temp[0];
+            temp[0] = temp[i];
+            temp[i] = temp1;
 
-        ChangeColor(temp);
+            // call max heapify on the reduced heap
+            Heapify(temp, i, 0);
+        }
     }
 
-    private void Heapify(float[] arr, int heapSize, int rootIndex)
+    // To heapify a subtree rooted with node i
+    void Heapify(float[] arr, int n, int i)
     {
-        int largest = rootIndex;
-        int leftChild = 2 * rootIndex + 1;
-        int rightChild = 2 * rootIndex + 2;
+        int largest = i;  // Initialize largest as root
+        int left = 2 * i + 1;  // left = 2*i + 1
+        int right = 2 * i + 2;  // right = 2*i + 2
 
-        if (leftChild < heapSize && arr[leftChild] > arr[largest])
-        {
-            largest = leftChild;
-        }
+        // If left child is larger than root
+        if (left < n && arr[left] > arr[largest])
+            largest = left;
 
-        if (rightChild < heapSize && arr[rightChild] > arr[largest])
-        {
-            largest = rightChild;
-        }
+        // If right child is larger than largest so far
+        if (right < n && arr[right] > arr[largest])
+            largest = right;
 
-        if (largest != rootIndex)
+        // If largest is not root
+        if (largest != i)
         {
-            float t = arr[rootIndex];
-            arr[rootIndex] = arr[largest];
-            arr[largest] = t;
-            Heapify(arr, heapSize, largest);
+            // Swap
+            float swap = arr[i];
+            arr[i] = arr[largest];
+            arr[largest] = swap;
+            Swap(Array.IndexOf(arr, arr[i]), Array.IndexOf(arr, arr[largest]));
+            ChangeColor(arr);
+
+            // Recursively heapify the affected sub-tree
+            Heapify(arr, n, largest);
         }
     }
-
 
     //*** Helper functions***
     private void Swap(int a, int b) {
+        audioSource.Stop();
+        audioSource.Play();
         GameObject t = cube_array[a];
         cube_array[a] = cube_array[b];
         cube_array[b] = t;
@@ -280,8 +282,6 @@ public class Program : MonoBehaviour {
         i_i = 1;
         j_i = i_i - 1;
         i_s = 0;
-        i_g = 0;
-        i_c = 0;
         swaps = 0;
         sorted = false;
         clicked = false;
