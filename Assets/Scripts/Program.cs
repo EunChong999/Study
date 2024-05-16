@@ -18,7 +18,7 @@ public class Program : MonoBehaviour {
     public float[] heights;
     public Dropdown algorithms;
     private bool clicked = false, sorted = false, merged = false, test = false, reverse = false;
-    private int i_b, i_i, j_b, j_i, i_s, swaps = 0;
+    private int i_b, i_i, j_b, j_i, i_s, i_h, i_m, i_q, swaps = 0;
     public Material mat_blue, mat_white;
     public Text swap_count_text, slider_text;
 
@@ -29,13 +29,16 @@ public class Program : MonoBehaviour {
 
     private Thread t1;
 
-    private void Awake() {
+    private void Start() {
 
         i_b = 0;
         j_b = 0;
         i_i = 1;
         j_i = i_i - 1;
         i_s = 0;
+        i_h = heights.Length;
+        i_m = 0;
+        i_q = 0;
 
         RenderBars((int)slider.value);
     }
@@ -154,56 +157,59 @@ public class Program : MonoBehaviour {
     {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        //Array.Sort(temp);
+        Array.Sort(temp);
 
-        int n = temp.Length;
-
-        // Build heap (rearrange array)
-        for (int i = n / 2 - 1; i >= 0; i--)
+        // Build a max heap
+        for (int i = temp.Length / 2 - 1; i >= 0; i--)
         {
-            Heapify(heights, n, i);
+            Heapify(heights, temp.Length, i);
         }
 
         // One by one extract an element from heap
-        for (int i = n - 1; i >= 0; i--)
+        for (int i = temp.Length - 1; i > 0; i--)
         {
             // Move current root to end
-            float temp1 = temp[0];
-            temp[0] = temp[i];
-            temp[i] = temp1;
+            float tempo = heights[0];
+            heights[0] = heights[i];
+            heights[i] = tempo;
+            Swap(0, i);
 
-            // call max heapify on the reduced heap
-            Heapify(temp, i, 0);
+            // Reduce the heap size by one and heapify the root element
+            Heapify(heights, i, 0);
+
+            // Visual feedback or logging
+            ChangeColor(heights);
         }
     }
 
-    // To heapify a subtree rooted with node i
-    void Heapify(float[] arr, int n, int i)
+    private void Heapify(float[] array, int heapSize, int rootIndex)
     {
-        int largest = i;  // Initialize largest as root
-        int left = 2 * i + 1;  // left = 2*i + 1
-        int right = 2 * i + 2;  // right = 2*i + 2
+        int largest = rootIndex;
+        int leftChild = 2 * rootIndex + 1;
+        int rightChild = 2 * rootIndex + 2;
 
         // If left child is larger than root
-        if (left < n && arr[left] > arr[largest])
-            largest = left;
+        if (leftChild < heapSize && array[leftChild] > array[largest])
+        {
+            largest = leftChild;
+        }
 
         // If right child is larger than largest so far
-        if (right < n && arr[right] > arr[largest])
-            largest = right;
+        if (rightChild < heapSize && array[rightChild] > array[largest])
+        {
+            largest = rightChild;
+        }
 
         // If largest is not root
-        if (largest != i)
+        if (largest != rootIndex)
         {
-            // Swap
-            float swap = arr[i];
-            arr[i] = arr[largest];
-            arr[largest] = swap;
-            Swap(Array.IndexOf(arr, arr[i]), Array.IndexOf(arr, arr[largest]));
-            ChangeColor(arr);
+            float swap = array[rootIndex];
+            array[rootIndex] = array[largest];
+            array[largest] = swap;
+            Swap(rootIndex, largest);
 
             // Recursively heapify the affected sub-tree
-            Heapify(arr, n, largest);
+            Heapify(array, heapSize, largest);
         }
     }
 
@@ -266,7 +272,7 @@ public class Program : MonoBehaviour {
             // 큐브의 높이에 따라 위치를 조정하지 않고, 두께만 설정
             cube_array[i] = Instantiate(cube_prefab, new Vector3(start + (i * (thickness)), (heights[i] / 2) - 35f, z), Quaternion.identity);
             cube_array[i].transform.parent = cube_group.transform;
-            cube_array[i].transform.localScale = new Vector3(thickness, heights[i], 1f);
+            cube_array[i].transform.localScale = new Vector3(thickness * 0.9f, heights[i], 1f);
         }
         instantiated = true;
 
@@ -282,6 +288,9 @@ public class Program : MonoBehaviour {
         i_i = 1;
         j_i = i_i - 1;
         i_s = 0;
+        i_h = heights.Length;
+        i_m = 0;
+        i_q = 0;
         swaps = 0;
         sorted = false;
         clicked = false;
