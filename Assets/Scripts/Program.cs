@@ -18,11 +18,14 @@ public class Program : MonoBehaviour {
     public float[] heights;
     public Dropdown algorithms;
     private bool clicked = false, sorted = false, merged = false, test = false, reverse = false;
-    private int i_b, i_i, j_b, j_i, i_s, i_h, i_m, i_q, swaps = 0;
+    private int accesses = 0;
     public Material mat_red, mat_white;
     public Text swap_count_text, slider_text;
 
     private float[,] states;
+    private float waitForSwapTime = 0.1f;
+    private float waitForSubstituteTime = 0.1f;
+    private float waitForColorTime = 0.1f;
     private int state_index = 0;
 
     private List<int> dummy;
@@ -30,16 +33,6 @@ public class Program : MonoBehaviour {
     private Thread t1;
 
     private void Start() {
-
-        i_b = 0;
-        j_b = 0;
-        i_i = 1;
-        j_i = i_i - 1;
-        i_s = 0;
-        i_h = heights.Length;
-        i_m = 0;
-        i_q = 0;
-
         RenderBars((int)slider.value);
     }
 
@@ -72,10 +65,10 @@ public class Program : MonoBehaviour {
                 HeapSort();
                 break;
             case "Merge Sort":
-                SelectionSort();
+                MergeSort();
                 break;
             case "Quick Sort":
-                SelectionSort();
+                QuickSort();
                 break;
             default:
                 break;
@@ -84,76 +77,102 @@ public class Program : MonoBehaviour {
 
     //***Sorting Algorithms***
 
-    private void BubbleSort() {    
+    private void BubbleSort() {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);
+        Array.Sort(temp);  
 
-        if (i_b < heights.Length - 1) {
-            if (j_b < heights.Length - i_b - 1) {
-                if (heights[j_b] > heights[j_b + 1]) {
-                    float t = heights[j_b];
-                    heights[j_b] = heights[j_b + 1];
-                    heights[j_b + 1] = t;
-                    Swap(j_b, j_b + 1);
+        int n = heights.Length;
+        bool swapped;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            swapped = false;
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                if (heights[j] > heights[j + 1])
+                {
+                    float tempVal = heights[j];
+                    heights[j] = heights[j + 1];
+                    heights[j + 1] = tempVal;
+                    StartCoroutine(Swap(j, j + 1));
+                    swapped = true;
                 }
-                j_b += 1;
+
+                //StartCoroutine(ChangeColor(temp));
             }
-            else {
-                j_b = 0;
-                i_b += 1;
+
+            if (!swapped)
+            {
+                break;
             }
-            ChangeColor(temp);
         }
+
+        sorted = true;
     }
 
-
-    private void InsertionSort() {  
+    private void InsertionSort() {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);
+        Array.Sort(temp);  
 
-        if (i_i < heights.Length){
-            if (j_i >= 0 && heights[j_i] > heights[j_i + 1]) {
-                float t = heights[j_i];
-                heights[j_i] = heights[j_i + 1];
-                heights[j_i + 1] = t;
-                Swap(j_i, j_i + 1);
-                j_i -= 1;
+        int n = heights.Length;
+
+        for (int i = 1; i < n; i++)
+        {
+            float key = heights[i];
+            int j = i - 1;
+
+            while (j >= 0 && heights[j] > key)
+            {
+                heights[j + 1] = heights[j];
+                j = j - 1;
+                StartCoroutine(Swap(j + 1, j + 2));
+                //StartCoroutine(ChangeColor(temp));
             }
-            else {
-                i_i += 1;
-                j_i = i_i - 1;
-            }
-            ChangeColor(temp);
+            heights[j + 1] = key;
+
+            //StartCoroutine(ChangeColor(temp));
         }
+
+        sorted = true;
     }
 
-    private void SelectionSort() {  
+    private void SelectionSort() {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);
+        Array.Sort(temp);  // 정렬된 배열 생성
 
-        if (i_s < heights.Length) {
-            float min = heights[i_s];
-            int min_index = i_s;
-            for (int i = i_s; i < heights.Length; i++) {
-                if (heights[i] < min) {
-                    min = heights[i];
-                    min_index = i;
+        int n = heights.Length;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            // Find the minimum element in unsorted array
+            int minIndex = i;
+            for (int j = i + 1; j < n; j++)
+            {
+                if (heights[j] < heights[minIndex])
+                {
+                    minIndex = j;
                 }
             }
-            if (i_s != min_index) {
-                float t = heights[i_s];
-                heights[i_s] = heights[min_index];
-                heights[min_index] = t;
-                Swap(i_s, min_index);
+
+            // Swap the found minimum element with the first element
+            if (minIndex != i)
+            {
+                float tempVal = heights[i];
+                heights[i] = heights[minIndex];
+                heights[minIndex] = tempVal;
+                StartCoroutine(Swap(i, minIndex));
             }
-            i_s += 1;
-            ChangeColor(temp);
+
+            //StartCoroutine(ChangeColor(temp));
         }
+
+        sorted = true;
     }
 
+    #region HeapSort
     public void HeapSort()
     {
         float[] temp = new float[heights.Length];
@@ -173,18 +192,15 @@ public class Program : MonoBehaviour {
             float tempo = heights[0];
             heights[0] = heights[i];
             heights[i] = tempo;
-            Swap(0, i);
+            StartCoroutine(Swap(0, i));
 
             // Reduce the heap size by one and heapify the root element
             Heapify(heights, i, 0);
-
-            // Visual feedback or logging
-            ChangeColor(heights);
+            //StartCoroutine(ChangeColor(heights));
         }
 
         sorted = true;
     }
-
     private void Heapify(float[] array, int heapSize, int rootIndex)
     {
         int largest = rootIndex;
@@ -209,16 +225,136 @@ public class Program : MonoBehaviour {
             float swap = array[rootIndex];
             array[rootIndex] = array[largest];
             array[largest] = swap;
-            Swap(rootIndex, largest);
+            StartCoroutine(Swap(rootIndex, largest));
 
             // Recursively heapify the affected sub-tree
             Heapify(array, heapSize, largest);
         }
     }
+    #endregion
+
+    #region MergeSort
+    private void MergeSort()
+    {
+        float[] temp = new float[heights.Length];
+        Array.Copy(heights, 0, temp, 0, heights.Length);
+        Array.Sort(temp);  
+
+        MergeSortHelper(heights, 0, heights.Length - 1);
+
+        sorted = true;
+    }
+
+    private void MergeSortHelper(float[] array, int beginIndex, int endIndex)
+    {
+        if (beginIndex < endIndex)
+        {
+            int midIndex = (beginIndex + endIndex) / 2;
+            MergeSortHelper(array, beginIndex, midIndex);
+            MergeSortHelper(array, midIndex + 1, endIndex);
+            Merge(array, beginIndex, midIndex, endIndex);
+            StartCoroutine(Substitute(array));
+            //StartCoroutine(ChangeColor(array));
+        }
+    }
+
+    private void Merge(float[] array, int beginIndex, int midIndex, int endIndex)
+    {
+        int leftSize = midIndex - beginIndex + 1;
+        int rightSize = endIndex - midIndex;
+        float[] leftHalf = new float[leftSize];
+        float[] rightHalf = new float[rightSize];
+
+        Array.Copy(array, beginIndex, leftHalf, 0, leftSize);
+        Array.Copy(array, midIndex + 1, rightHalf, 0, rightSize);
+
+        int i = 0, j = 0, k = beginIndex;
+
+        while (i < leftSize && j < rightSize)
+        {
+            if (leftHalf[i] <= rightHalf[j])
+            {
+                array[k] = leftHalf[i];
+                i++;
+            }
+            else
+            {
+                array[k] = rightHalf[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < leftSize)
+        {
+            array[k] = leftHalf[i];
+            i++;
+            k++;
+        }
+
+        while (j < rightSize)
+        {
+            array[k] = rightHalf[j];
+            j++;
+            k++;
+        }
+    }
+    #endregion
+
+    #region QuickSort
+    private void QuickSort()
+    {
+        float[] temp = new float[heights.Length];
+        Array.Copy(heights, 0, temp, 0, heights.Length);
+        Array.Sort(temp);
+
+        QuickSortHelper(heights, 0, temp.Length - 1);
+
+        sorted = true;
+    }
+
+    public void QuickSortHelper(float[] arr, int low, int high)
+    {
+        if (low < high)
+        {
+            int pivotIndex = Partition(arr, low, high);
+            QuickSortHelper(arr, low, pivotIndex - 1);
+            QuickSortHelper(arr, pivotIndex + 1, high);
+            //StartCoroutine(ChangeColor(arr));
+        }
+    }
+
+    private int Partition(float[] arr, int low, int high)
+    {
+        float pivot = arr[high];
+        int i = low - 1;
+
+        for (int j = low; j < high; j++)
+        {
+            if (arr[j] <= pivot)
+            {
+                i++;
+                Swap(arr, i, j);
+            }
+        }
+        Swap(arr, i + 1, high);
+        return i + 1;
+    }
+
+    private void Swap(float[] arr, int a, int b)
+    {
+        float temp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = temp;
+        StartCoroutine(Swap(a, b));
+    }
+    #endregion
 
     //*** Helper functions***
-    private void Swap(int a, int b) {
-        audioSource.Stop();
+    IEnumerator Swap(int a, int b) {
+        WaitForSeconds waitForSeconds = new WaitForSeconds(waitForSwapTime);
+        waitForSwapTime += 0.05f;
+        yield return waitForSeconds;
         audioSource.Play();
         GameObject t = cube_array[a];
         cube_array[a] = cube_array[b];
@@ -226,19 +362,45 @@ public class Program : MonoBehaviour {
         Vector3 v = cube_array[a].transform.position;
         cube_array[a].transform.position = new Vector3(cube_array[b].transform.position.x, v.y, 0f);
         cube_array[b].transform.position = new Vector3(v.x, cube_array[b].transform.position.y, 0f);
-        swaps += 1;
-        swap_count_text.text = "Swaps: " + swaps;
+        accesses += 1;
+        swap_count_text.text = "Accesses: " + accesses;
     }
 
-    private void ChangeColor(float[] s) {
-        for (int k = 0; k < heights.Length; k++) {
-            Renderer rend = cube_array[k].GetComponent<Renderer>();
-            if (heights[k] == s[k])
-                rend.material = mat_red;
-            else
-                rend.material = mat_white;
+    IEnumerator Substitute(float[] array)
+    {
+        WaitForSeconds waitForSeconds = new WaitForSeconds(waitForSubstituteTime);
+        waitForSubstituteTime += 0.05f;
+        yield return waitForSeconds;
+        audioSource.Play();
+        for (int i = 0; i < array.Length; i++)
+        {
+            // 오브젝트의 스케일을 조정합니다.
+            Vector3 newScale = cube_array[i].transform.localScale;
+            newScale.y = array[i];
+            cube_array[i].transform.localScale = newScale;
+
+            // 오브젝트의 위치를 조정합니다.
+            Vector3 newPosition = cube_array[i].transform.position;
+            newPosition.y = (array[i] / 2) - 35f; // 예를 들어, y 좌표를 배열의 값으로 설정합니다.
+            cube_array[i].transform.position = newPosition;
         }
+        accesses += 1;
+        swap_count_text.text = "Accesses: " + accesses;
     }
+
+    //IEnumerator ChangeColor(float[] s) {
+    //    WaitForSeconds waitForSeconds = new WaitForSeconds(waitForColorTime);
+    //    waitForColorTime += 0.25f;
+    //    for (int k = 0; k < heights.Length; k++) {
+    //        yield return waitForSeconds;
+    //        Renderer rend = cube_array[k].GetComponent<Renderer>();
+    //        if (heights[k] == s[k])
+    //            rend.material = mat_red;
+    //        else
+    //            rend.material = mat_white;
+    //    }
+    //}
+    
     public void OnSliderMoved() {
         Reset();
         RenderBars((int)slider.value);
@@ -282,23 +444,16 @@ public class Program : MonoBehaviour {
         cube_group.transform.position = new Vector3(0, 0, 0);
     }
 
-
-
-
     public void Reset() {
-        i_b = 0;
-        j_b = 0;
-        i_i = 1;
-        j_i = i_i - 1;
-        i_s = 0;
-        i_h = heights.Length;
-        i_m = 0;
-        i_q = 0;
-        swaps = 0;
+        StopAllCoroutines();
+        waitForSwapTime = 0.1f;
+        waitForSubstituteTime = 0.1f;
+        waitForColorTime = 0.1f;
+        accesses = 0;
         sorted = false;
         clicked = false;
         reverse = false;
-        swap_count_text.text = "Swaps: ";
+        swap_count_text.text = "Accesses: ";
         for (int k = 0; k < heights.Length; k++) {
             Renderer rend = cube_array[k].GetComponent<Renderer>();
             rend.material = mat_white;
