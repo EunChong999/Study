@@ -19,7 +19,7 @@ public class Program : MonoBehaviour {
     public Dropdown algorithms;
     private bool clicked = false, sorted = false, merged = false, test = false, reverse = false;
     private int i_b, i_i, j_b, j_i, i_s, i_h, i_m, i_q, swaps = 0;
-    public Material mat_blue, mat_white;
+    public Material mat_red, mat_white;
     public Text swap_count_text, slider_text;
 
     private float[,] states;
@@ -48,12 +48,13 @@ public class Program : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Application.Quit();
         }
-
-        if (!sorted && clicked)
-            OnClickSort();
     }
 
-    public void OnClickSort() {        
+    public void OnClickSort() {
+
+        if (sorted)
+            return;
+
         clicked = true;
         string algorithm;
         algorithm = algorithms.options[algorithms.value].text;
@@ -180,6 +181,8 @@ public class Program : MonoBehaviour {
             // Visual feedback or logging
             ChangeColor(heights);
         }
+
+        sorted = true;
     }
 
     private void Heapify(float[] array, int heapSize, int rootIndex)
@@ -231,7 +234,7 @@ public class Program : MonoBehaviour {
         for (int k = 0; k < heights.Length; k++) {
             Renderer rend = cube_array[k].GetComponent<Renderer>();
             if (heights[k] == s[k])
-                rend.material = mat_blue;
+                rend.material = mat_red;
             else
                 rend.material = mat_white;
         }
