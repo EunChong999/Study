@@ -802,7 +802,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.9906887, b: 0, a: 1}
+  m_Color: {r: 0.8415842, g: 1, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2958,10 +2958,12 @@ MonoBehaviour:
   slider: {fileID: 779781513}
   heights: []
   algorithms: {fileID: 1861530007}
+  swaps: 0
   mat_red: {fileID: 2100000, guid: 4cfa13b51f4d28144b3f754edf0075a2, type: 2}
   mat_white: {fileID: 2100000, guid: 6aa0e6803a995de40894f167d1f28871, type: 2}
   swap_count_text: {fileID: 1054390805}
   slider_text: {fileID: 932372108}
+  waitForSwapTime: 0
 --- !u!1 &2107905237
 GameObject:
   m_ObjectHideFlags: 0

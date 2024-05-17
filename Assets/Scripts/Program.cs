@@ -16,15 +16,11 @@ public class Program : MonoBehaviour {
     private GameObject[] cube_array;
     public float[] heights;
     public Dropdown algorithms;
-    private bool sorted = false, merged = false, test = false, reverse = false;
-    private int swaps = 0;
+    private bool sorted = false;
+    public int swaps = 0;
     public Material mat_red, mat_white;
     public TextMeshProUGUI swap_count_text, slider_text;
-    private float waitForSwapTime = 0.1f;
-
-    private List<int> dummy;
-
-    private Thread t1;
+    public float waitForSwapTime = 0;
 
     private void Start() {
         RenderBars((int)slider.value);
@@ -34,6 +30,13 @@ public class Program : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Application.Quit();
+        }
+
+        float epsilon = 0.0001f; 
+
+        if (Mathf.Abs(waitForSwapTime - swaps * 0.05f) < epsilon && swaps > 0)
+        {
+            ChangeColor();
         }
     }
 
@@ -68,12 +71,12 @@ public class Program : MonoBehaviour {
         }
      }
 
-    //***Sorting Algorithms***
-
-    private void BubbleSort() {
+    #region Sorter
+    private void BubbleSort()
+    {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);  
+        Array.Sort(temp);
 
         int n = heights.Length;
         bool swapped;
@@ -91,8 +94,6 @@ public class Program : MonoBehaviour {
                     StartCoroutine(Swap(j, j + 1));
                     swapped = true;
                 }
-
-                //StartCoroutine(ChangeColor(temp));
             }
 
             if (!swapped)
@@ -103,11 +104,11 @@ public class Program : MonoBehaviour {
 
         sorted = true;
     }
-
-    private void InsertionSort() {
+    private void InsertionSort()
+    {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);  
+        Array.Sort(temp);
 
         int n = heights.Length;
 
@@ -121,26 +122,22 @@ public class Program : MonoBehaviour {
                 heights[j + 1] = heights[j];
                 j = j - 1;
                 StartCoroutine(Swap(j + 1, j + 2));
-                //StartCoroutine(ChangeColor(temp));
             }
             heights[j + 1] = key;
-
-            //StartCoroutine(ChangeColor(temp));
         }
 
         sorted = true;
     }
-
-    private void SelectionSort() {
+    private void SelectionSort()
+    {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);  // 정렬된 배열 생성
+        Array.Sort(temp);  
 
         int n = heights.Length;
 
         for (int i = 0; i < n - 1; i++)
         {
-            // Find the minimum element in unsorted array
             int minIndex = i;
             for (int j = i + 1; j < n; j++)
             {
@@ -150,7 +147,6 @@ public class Program : MonoBehaviour {
                 }
             }
 
-            // Swap the found minimum element with the first element
             if (minIndex != i)
             {
                 float tempVal = heights[i];
@@ -158,13 +154,10 @@ public class Program : MonoBehaviour {
                 heights[minIndex] = tempVal;
                 StartCoroutine(Swap(i, minIndex));
             }
-
-            //StartCoroutine(ChangeColor(temp));
         }
 
         sorted = true;
     }
-
     #region HeapSort
     public void HeapSort()
     {
@@ -172,24 +165,19 @@ public class Program : MonoBehaviour {
         Array.Copy(heights, 0, temp, 0, heights.Length);
         Array.Sort(temp);
 
-        // Build a max heap
         for (int i = temp.Length / 2 - 1; i >= 0; i--)
         {
             Heapify(heights, temp.Length, i);
         }
 
-        // One by one extract an element from heap
         for (int i = temp.Length - 1; i > 0; i--)
         {
-            // Move current root to end
             float tempo = heights[0];
             heights[0] = heights[i];
             heights[i] = tempo;
             StartCoroutine(Swap(0, i));
 
-            // Reduce the heap size by one and heapify the root element
             Heapify(heights, i, 0);
-            //StartCoroutine(ChangeColor(heights));
         }
 
         sorted = true;
@@ -200,19 +188,16 @@ public class Program : MonoBehaviour {
         int leftChild = 2 * rootIndex + 1;
         int rightChild = 2 * rootIndex + 2;
 
-        // If left child is larger than root
         if (leftChild < heapSize && array[leftChild] > array[largest])
         {
             largest = leftChild;
         }
 
-        // If right child is larger than largest so far
         if (rightChild < heapSize && array[rightChild] > array[largest])
         {
             largest = rightChild;
         }
 
-        // If largest is not root
         if (largest != rootIndex)
         {
             float swap = array[rootIndex];
@@ -220,18 +205,16 @@ public class Program : MonoBehaviour {
             array[largest] = swap;
             StartCoroutine(Swap(rootIndex, largest));
 
-            // Recursively heapify the affected sub-tree
             Heapify(array, heapSize, largest);
         }
     }
     #endregion
-
     #region MergeSort
     private void MergeSort()
     {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
-        Array.Sort(temp);  
+        Array.Sort(temp);
 
         MergeSortHelper(heights, 0, heights.Length - 1);
 
@@ -246,7 +229,6 @@ public class Program : MonoBehaviour {
             MergeSortHelper(array, beginIndex, midIndex);
             MergeSortHelper(array, midIndex + 1, endIndex);
             Merge(array, beginIndex, midIndex, endIndex);
-            //StartCoroutine(ChangeColor(array));
         }
     }
 
@@ -265,22 +247,22 @@ public class Program : MonoBehaviour {
         {
             if (leftHalf[i] <= rightHalf[j])
             {
-                if (array[k] != leftHalf[i]) // 스왑이 필요한 경우에만 호출
+                if (array[k] != leftHalf[i]) 
                 {
-                    int targetIndex = FindOriginalIndex(array, k, endIndex, leftHalf[i]); // 인덱스 찾기
-                    if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+                    int targetIndex = FindOriginalIndex(array, k, endIndex, leftHalf[i]); 
+                    if (targetIndex != -1) Swap(array, k, targetIndex); 
                 }
-                array[k] = leftHalf[i];  // 배열에 값을 복사
+                array[k] = leftHalf[i];  
                 i++;
             }
             else
             {
-                if (array[k] != rightHalf[j]) // 스왑이 필요한 경우에만 호출
+                if (array[k] != rightHalf[j]) 
                 {
-                    int targetIndex = FindOriginalIndex(array, k, endIndex, rightHalf[j]); // 인덱스 찾기
-                    if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+                    int targetIndex = FindOriginalIndex(array, k, endIndex, rightHalf[j]); 
+                    if (targetIndex != -1) Swap(array, k, targetIndex); 
                 }
-                array[k] = rightHalf[j]; // 배열에 값을 복사
+                array[k] = rightHalf[j]; 
                 j++;
             }
             k++;
@@ -288,30 +270,29 @@ public class Program : MonoBehaviour {
 
         while (i < leftSize)
         {
-            if (array[k] != leftHalf[i]) // 스왑이 필요한 경우에만 호출
+            if (array[k] != leftHalf[i]) 
             {
-                int targetIndex = FindOriginalIndex(array, k, endIndex, leftHalf[i]); // 인덱스 찾기
-                if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+                int targetIndex = FindOriginalIndex(array, k, endIndex, leftHalf[i]);
+                if (targetIndex != -1) Swap(array, k, targetIndex); 
             }
-            array[k] = leftHalf[i]; // 배열에 값을 복사
+            array[k] = leftHalf[i]; 
             i++;
             k++;
         }
 
         while (j < rightSize)
         {
-            if (array[k] != rightHalf[j]) // 스왑이 필요한 경우에만 호출
+            if (array[k] != rightHalf[j]) 
             {
-                int targetIndex = FindOriginalIndex(array, k, endIndex, rightHalf[j]); // 인덱스 찾기
-                if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+                int targetIndex = FindOriginalIndex(array, k, endIndex, rightHalf[j]); 
+                if (targetIndex != -1) Swap(array, k, targetIndex); 
             }
-            array[k] = rightHalf[j]; // 배열에 값을 복사
+            array[k] = rightHalf[j];
             j++;
             k++;
         }
     }
     #endregion
-
     #region QuickSort
     private void QuickSort()
     {
@@ -331,7 +312,6 @@ public class Program : MonoBehaviour {
             int pivotIndex = Partition(arr, low, high);
             QuickSortHelper(arr, low, pivotIndex - 1);
             QuickSortHelper(arr, pivotIndex + 1, high);
-            //StartCoroutine(ChangeColor(arr));
         }
     }
 
@@ -360,9 +340,11 @@ public class Program : MonoBehaviour {
         StartCoroutine(Swap(a, b));
     }
     #endregion
+    #endregion
 
-    //*** Helper functions***
-    IEnumerator Swap(int a, int b) {
+    #region Helper
+    IEnumerator Swap(int a, int b)
+    {
         WaitForSeconds waitForSeconds = new WaitForSeconds(waitForSwapTime);
         waitForSwapTime += 0.05f;
         yield return waitForSeconds;
@@ -377,18 +359,14 @@ public class Program : MonoBehaviour {
         swap_count_text.text = "Swaps : " + swaps;
     }
 
-    //IEnumerator ChangeColor(float[] s) {
-    //    WaitForSeconds waitForSeconds = new WaitForSeconds(waitForColorTime);
-    //    waitForColorTime += 0.25f;
-    //    for (int k = 0; k < heights.Length; k++) {
-    //        yield return waitForSeconds;
-    //        Renderer rend = cube_array[k].GetComponent<Renderer>();
-    //        if (heights[k] == s[k])
-    //            rend.material = mat_red;
-    //        else
-    //            rend.material = mat_white;
-    //    }
-    //}
+    private void ChangeColor()
+    {
+        foreach (GameObject cube in cube_array) 
+        {
+            Renderer rend = cube.GetComponent<Renderer>();
+            rend.material = mat_red;
+        }
+    }
 
     // 인덱스를 찾기 위한 헬퍼 함수 추가
     private int FindOriginalIndex(float[] array, int beginIndex, int endIndex, float value)
@@ -403,7 +381,8 @@ public class Program : MonoBehaviour {
         return -1; // 값이 발견되지 않으면 -1 반환 (일반적으로는 발생하지 않음)
     }
 
-    public void OnSliderMoved() {
+    public void OnSliderMoved()
+    {
         Reset();
         RenderBars((int)slider.value);
     }
@@ -446,16 +425,18 @@ public class Program : MonoBehaviour {
         cube_group.transform.position = new Vector3(-32.5f, 0, 0);
     }
 
-    public void Reset() {
+    public void Reset()
+    {
         StopAllCoroutines();
-        waitForSwapTime = 0.1f;
+        waitForSwapTime = 0;
         swaps = 0;
         sorted = false;
-        reverse = false;
         swap_count_text.text = "Swaps : 0";
-        for (int k = 0; k < heights.Length; k++) {
+        for (int k = 0; k < heights.Length; k++)
+        {
             Renderer rend = cube_array[k].GetComponent<Renderer>();
-            rend.material = mat_white;
+            rend.material = mat_red;
         }
     }
+    #endregion
 }
