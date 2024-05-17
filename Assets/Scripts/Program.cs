@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
-using Unity.Burst.Intrinsics;
-using static UnityEngine.GraphicsBuffer;
-using static Unity.Burst.Intrinsics.X86.Avx;
+using TMPro;
 
 public class Program : MonoBehaviour {
 
@@ -18,16 +16,11 @@ public class Program : MonoBehaviour {
     private GameObject[] cube_array;
     public float[] heights;
     public Dropdown algorithms;
-    private bool clicked = false, sorted = false, merged = false, test = false, reverse = false;
-    private int accesses = 0;
+    private bool sorted = false, merged = false, test = false, reverse = false;
+    private int swaps = 0;
     public Material mat_red, mat_white;
-    public Text swap_count_text, slider_text;
-
-    private float[,] states;
+    public TextMeshProUGUI swap_count_text, slider_text;
     private float waitForSwapTime = 0.1f;
-    private float waitForSubstituteTime = 0.1f;
-    private float waitForColorTime = 0.1f;
-    private int state_index = 0;
 
     private List<int> dummy;
 
@@ -49,7 +42,6 @@ public class Program : MonoBehaviour {
         if (sorted)
             return;
 
-        clicked = true;
         string algorithm;
         algorithm = algorithms.options[algorithms.value].text;
         switch (algorithm) {
@@ -381,8 +373,8 @@ public class Program : MonoBehaviour {
         Vector3 v = cube_array[a].transform.position;
         cube_array[a].transform.position = new Vector3(cube_array[b].transform.position.x, v.y, 0f);
         cube_array[b].transform.position = new Vector3(v.x, cube_array[b].transform.position.y, 0f);
-        accesses += 1;
-        swap_count_text.text = "Swaps: " + accesses;
+        swaps += 1;
+        swap_count_text.text = "Swaps : " + swaps;
     }
 
     //IEnumerator ChangeColor(float[] s) {
@@ -418,7 +410,7 @@ public class Program : MonoBehaviour {
 
     public void RenderBars(int n)
     {
-        slider_text.text = "Number of items: " + n;
+        slider_text.text = "Number of items : " + n;
         if (instantiated)
         {
             for (int i = 0; i < cube_array.Length; i++)
@@ -451,19 +443,16 @@ public class Program : MonoBehaviour {
         }
         instantiated = true;
 
-        cube_group.transform.position = new Vector3(0, 0, 0);
+        cube_group.transform.position = new Vector3(-32.5f, 0, 0);
     }
 
     public void Reset() {
         StopAllCoroutines();
         waitForSwapTime = 0.1f;
-        waitForSubstituteTime = 0.1f;
-        waitForColorTime = 0.1f;
-        accesses = 0;
+        swaps = 0;
         sorted = false;
-        clicked = false;
         reverse = false;
-        swap_count_text.text = "Swaps: ";
+        swap_count_text.text = "Swaps : 0";
         for (int k = 0; k < heights.Length; k++) {
             Renderer rend = cube_array[k].GetComponent<Renderer>();
             rend.material = mat_white;
