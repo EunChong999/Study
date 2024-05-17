@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Threading;
 using Unity.Burst.Intrinsics;
 using static UnityEngine.GraphicsBuffer;
+using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class Program : MonoBehaviour {
 
@@ -253,7 +254,6 @@ public class Program : MonoBehaviour {
             MergeSortHelper(array, beginIndex, midIndex);
             MergeSortHelper(array, midIndex + 1, endIndex);
             Merge(array, beginIndex, midIndex, endIndex);
-            StartCoroutine(Substitute(array));
             //StartCoroutine(ChangeColor(array));
         }
     }
@@ -267,19 +267,28 @@ public class Program : MonoBehaviour {
 
         Array.Copy(array, beginIndex, leftHalf, 0, leftSize);
         Array.Copy(array, midIndex + 1, rightHalf, 0, rightSize);
-
         int i = 0, j = 0, k = beginIndex;
 
         while (i < leftSize && j < rightSize)
         {
             if (leftHalf[i] <= rightHalf[j])
             {
-                array[k] = leftHalf[i];
+                if (array[k] != leftHalf[i]) // 스왑이 필요한 경우에만 호출
+                {
+                    int targetIndex = FindOriginalIndex(array, k, endIndex, leftHalf[i]); // 인덱스 찾기
+                    if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+                }
+                array[k] = leftHalf[i];  // 배열에 값을 복사
                 i++;
             }
             else
             {
-                array[k] = rightHalf[j];
+                if (array[k] != rightHalf[j]) // 스왑이 필요한 경우에만 호출
+                {
+                    int targetIndex = FindOriginalIndex(array, k, endIndex, rightHalf[j]); // 인덱스 찾기
+                    if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+                }
+                array[k] = rightHalf[j]; // 배열에 값을 복사
                 j++;
             }
             k++;
@@ -287,14 +296,24 @@ public class Program : MonoBehaviour {
 
         while (i < leftSize)
         {
-            array[k] = leftHalf[i];
+            if (array[k] != leftHalf[i]) // 스왑이 필요한 경우에만 호출
+            {
+                int targetIndex = FindOriginalIndex(array, k, endIndex, leftHalf[i]); // 인덱스 찾기
+                if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+            }
+            array[k] = leftHalf[i]; // 배열에 값을 복사
             i++;
             k++;
         }
 
         while (j < rightSize)
         {
-            array[k] = rightHalf[j];
+            if (array[k] != rightHalf[j]) // 스왑이 필요한 경우에만 호출
+            {
+                int targetIndex = FindOriginalIndex(array, k, endIndex, rightHalf[j]); // 인덱스 찾기
+                if (targetIndex != -1) Swap(array, k, targetIndex); // Swap 호출
+            }
+            array[k] = rightHalf[j]; // 배열에 값을 복사
             j++;
             k++;
         }
@@ -363,29 +382,7 @@ public class Program : MonoBehaviour {
         cube_array[a].transform.position = new Vector3(cube_array[b].transform.position.x, v.y, 0f);
         cube_array[b].transform.position = new Vector3(v.x, cube_array[b].transform.position.y, 0f);
         accesses += 1;
-        swap_count_text.text = "Accesses: " + accesses;
-    }
-
-    IEnumerator Substitute(float[] array)
-    {
-        WaitForSeconds waitForSeconds = new WaitForSeconds(waitForSubstituteTime);
-        waitForSubstituteTime += 0.05f;
-        yield return waitForSeconds;
-        audioSource.Play();
-        for (int i = 0; i < array.Length; i++)
-        {
-            // 오브젝트의 스케일을 조정합니다.
-            Vector3 newScale = cube_array[i].transform.localScale;
-            newScale.y = array[i];
-            cube_array[i].transform.localScale = newScale;
-
-            // 오브젝트의 위치를 조정합니다.
-            Vector3 newPosition = cube_array[i].transform.position;
-            newPosition.y = (array[i] / 2) - 35f; // 예를 들어, y 좌표를 배열의 값으로 설정합니다.
-            cube_array[i].transform.position = newPosition;
-        }
-        accesses += 1;
-        swap_count_text.text = "Accesses: " + accesses;
+        swap_count_text.text = "Swaps: " + accesses;
     }
 
     //IEnumerator ChangeColor(float[] s) {
@@ -400,7 +397,20 @@ public class Program : MonoBehaviour {
     //            rend.material = mat_white;
     //    }
     //}
-    
+
+    // 인덱스를 찾기 위한 헬퍼 함수 추가
+    private int FindOriginalIndex(float[] array, int beginIndex, int endIndex, float value)
+    {
+        for (int i = beginIndex; i <= endIndex; i++)
+        {
+            if (array[i] == value)
+            {
+                return i;
+            }
+        }
+        return -1; // 값이 발견되지 않으면 -1 반환 (일반적으로는 발생하지 않음)
+    }
+
     public void OnSliderMoved() {
         Reset();
         RenderBars((int)slider.value);
@@ -453,7 +463,7 @@ public class Program : MonoBehaviour {
         sorted = false;
         clicked = false;
         reverse = false;
-        swap_count_text.text = "Accesses: ";
+        swap_count_text.text = "Swaps: ";
         for (int k = 0; k < heights.Length; k++) {
             Renderer rend = cube_array[k].GetComponent<Renderer>();
             rend.material = mat_white;

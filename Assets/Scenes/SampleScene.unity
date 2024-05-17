@@ -1269,7 +1269,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'Accesses:'
+  m_Text: 'Swaps:'
 --- !u!222 &1033227079
 CanvasRenderer:
   m_ObjectHideFlags: 0
