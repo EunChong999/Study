@@ -18,25 +18,24 @@ public class Program : MonoBehaviour {
     public Dropdown algorithms;
     private bool sorted = false;
     public int swaps = 0;
-    public Material mat_red, mat_white;
+    public Material mat_green, mat_white, mat_red;
     public TextMeshProUGUI swap_count_text, slider_text;
     public float waitForSwapTime = 0;
+    float waitForChangeTime = 0.025f;
+    WaitForSeconds waitForSeconds;
 
     private void Start() {
         RenderBars((int)slider.value);
+        waitForSeconds = new WaitForSeconds(waitForChangeTime);
     }
 
     private void Update() {
-
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Application.Quit();
         }
 
-        float epsilon = 0.0001f; 
-
-        if (Mathf.Abs(waitForSwapTime - swaps * 0.05f) < epsilon && swaps > 0)
-        {
-            ChangeColor();
+        if (Mathf.Abs(waitForSwapTime - swaps * 0.05f) < 0.01f && swaps > 0) { 
+            StartCoroutine(ChangeColor());
         }
     }
 
@@ -91,7 +90,7 @@ public class Program : MonoBehaviour {
                     float tempVal = heights[j];
                     heights[j] = heights[j + 1];
                     heights[j + 1] = tempVal;
-                    StartCoroutine(Swap(j, j + 1));
+                    StartCoroutine(Swap(j, j + 1, temp));
                     swapped = true;
                 }
             }
@@ -121,7 +120,7 @@ public class Program : MonoBehaviour {
             {
                 heights[j + 1] = heights[j];
                 j = j - 1;
-                StartCoroutine(Swap(j + 1, j + 2));
+                StartCoroutine(Swap(j + 1, j + 2, temp));
             }
             heights[j + 1] = key;
         }
@@ -152,7 +151,7 @@ public class Program : MonoBehaviour {
                 float tempVal = heights[i];
                 heights[i] = heights[minIndex];
                 heights[minIndex] = tempVal;
-                StartCoroutine(Swap(i, minIndex));
+                StartCoroutine(Swap(i, minIndex, temp));
             }
         }
 
@@ -175,7 +174,7 @@ public class Program : MonoBehaviour {
             float tempo = heights[0];
             heights[0] = heights[i];
             heights[i] = tempo;
-            StartCoroutine(Swap(0, i));
+            StartCoroutine(Swap(0, i, temp));
 
             Heapify(heights, i, 0);
         }
@@ -203,7 +202,7 @@ public class Program : MonoBehaviour {
             float swap = array[rootIndex];
             array[rootIndex] = array[largest];
             array[largest] = swap;
-            StartCoroutine(Swap(rootIndex, largest));
+            StartCoroutine(Swap(rootIndex, largest, array));
 
             Heapify(array, heapSize, largest);
         }
@@ -337,13 +336,13 @@ public class Program : MonoBehaviour {
         float temp = arr[a];
         arr[a] = arr[b];
         arr[b] = temp;
-        StartCoroutine(Swap(a, b));
+        StartCoroutine(Swap(a, b, arr));
     }
     #endregion
     #endregion
 
     #region Helper
-    IEnumerator Swap(int a, int b)
+    IEnumerator Swap(int a, int b, float[] arr)
     {
         WaitForSeconds waitForSeconds = new WaitForSeconds(waitForSwapTime);
         waitForSwapTime += 0.05f;
@@ -359,16 +358,16 @@ public class Program : MonoBehaviour {
         swap_count_text.text = "Swaps : " + swaps;
     }
 
-    private void ChangeColor()
+    IEnumerator ChangeColor()
     {
         foreach (GameObject cube in cube_array) 
         {
+            yield return waitForSeconds;
             Renderer rend = cube.GetComponent<Renderer>();
-            rend.material = mat_red;
+            rend.material = mat_green;
         }
     }
 
-    // 인덱스를 찾기 위한 헬퍼 함수 추가
     private int FindOriginalIndex(float[] array, int beginIndex, int endIndex, float value)
     {
         for (int i = beginIndex; i <= endIndex; i++)
@@ -378,7 +377,7 @@ public class Program : MonoBehaviour {
                 return i;
             }
         }
-        return -1; // 값이 발견되지 않으면 -1 반환 (일반적으로는 발생하지 않음)
+        return -1; 
     }
 
     public void OnSliderMoved()
@@ -435,7 +434,7 @@ public class Program : MonoBehaviour {
         for (int k = 0; k < heights.Length; k++)
         {
             Renderer rend = cube_array[k].GetComponent<Renderer>();
-            rend.material = mat_red;
+            rend.material = mat_green;
         }
     }
     #endregion
