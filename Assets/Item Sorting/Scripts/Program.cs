@@ -23,6 +23,7 @@ public class Program : MonoBehaviour {
     public float waitForSwapTime = 0;
     float waitForChangeTime = 0.025f;
     WaitForSeconds waitForSeconds;
+    public bool canChangeColor;
 
     private void Start() {
         RenderBars((int)slider.value);
@@ -356,10 +357,34 @@ public class Program : MonoBehaviour {
         cube_array[b].transform.position = new Vector3(v.x, cube_array[b].transform.position.y, 0f);
         swaps += 1;
         swap_count_text.text = "Swaps : " + swaps;
+
+        Renderer rend = null;
+
+        foreach (GameObject cube in cube_array)
+        {
+            rend = cube.GetComponent<Renderer>();
+            rend.material = mat_white;
+        }
+
+        rend = cube_array[a].GetComponent<Renderer>();
+        rend.material = mat_red;
+        rend = cube_array[b].GetComponent<Renderer>();
+        rend.material = mat_red;
     }
 
     IEnumerator ChangeColor()
     {
+        if (!canChangeColor)
+            yield break;
+
+        foreach (GameObject cube in cube_array)
+        {
+            Renderer rend = cube.GetComponent<Renderer>();
+            rend.material = mat_white;
+        }
+
+        canChangeColor = false;
+
         foreach (GameObject cube in cube_array) 
         {
             yield return waitForSeconds;
@@ -430,6 +455,7 @@ public class Program : MonoBehaviour {
         waitForSwapTime = 0;
         swaps = 0;
         sorted = false;
+        canChangeColor = true;
         swap_count_text.text = "Swaps : 0";
         for (int k = 0; k < heights.Length; k++)
         {
