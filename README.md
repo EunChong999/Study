@@ -1,1 +1,1 @@
-# AlgorithmStudy
+# Study
