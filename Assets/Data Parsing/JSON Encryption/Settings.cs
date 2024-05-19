@@ -26,8 +26,6 @@ public class Settings : MonoBehaviour
 
         path = Application.persistentDataPath + fileName;
         Debug.Log(path);
-
-        LoadData();
     }
 
     public void SaveData()
