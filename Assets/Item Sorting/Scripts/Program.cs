@@ -158,6 +158,7 @@ public class Program : MonoBehaviour {
 
         sorted = true;
     }
+
     #region HeapSort
     public void HeapSort()
     {
@@ -209,6 +210,7 @@ public class Program : MonoBehaviour {
         }
     }
     #endregion
+
     #region MergeSort
     private void MergeSort()
     {
@@ -293,15 +295,14 @@ public class Program : MonoBehaviour {
         }
     }
     #endregion
+
     #region QuickSort
     private void QuickSort()
     {
         float[] temp = new float[heights.Length];
         Array.Copy(heights, 0, temp, 0, heights.Length);
         Array.Sort(temp);
-
         QuickSortHelper(heights, 0, temp.Length - 1);
-
         sorted = true;
     }
 
@@ -317,19 +318,29 @@ public class Program : MonoBehaviour {
 
     private int Partition(float[] arr, int low, int high)
     {
-        float pivot = arr[high];
-        int i = low - 1;
+        float pivot = arr[low]; 
+        int i = low + 1;
+        int j = high;
 
-        for (int j = low; j < high; j++)
+        while (i <= j)
         {
-            if (arr[j] <= pivot)
+            while (i <= j && arr[i] <= pivot)
             {
                 i++;
+            }
+
+            while (i <= j && arr[j] > pivot)
+            {
+                j--;
+            }
+
+            if (i < j)
+            {
                 Swap(arr, i, j);
             }
         }
-        Swap(arr, i + 1, high);
-        return i + 1;
+        Swap(arr, low, j); 
+        return j;
     }
 
     private void Swap(float[] arr, int a, int b)
@@ -337,8 +348,9 @@ public class Program : MonoBehaviour {
         float temp = arr[a];
         arr[a] = arr[b];
         arr[b] = temp;
-        StartCoroutine(Swap(a, b, arr));
+        StartCoroutine(Swap(a, b, arr)); 
     }
+
     #endregion
     #endregion
 

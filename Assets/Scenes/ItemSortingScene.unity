@@ -664,9 +664,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1930114191}
-  - {fileID: 1861530006}
   - {fileID: 779781512}
   - {fileID: 1178632158}
+  - {fileID: 1861530006}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2863,7 +2863,7 @@ MonoBehaviour:
   cube_group: {fileID: 1583425332}
   slider: {fileID: 779781513}
   heights: []
-  algorithms: {fileID: 1861530007}
+  algorithms: {fileID: 0}
   swaps: 0
   mat_green: {fileID: 2100000, guid: 4cfa13b51f4d28144b3f754edf0075a2, type: 2}
   mat_white: {fileID: 2100000, guid: 6aa0e6803a995de40894f167d1f28871, type: 2}
