@@ -14,12 +14,4 @@ public class ObsManager : MonoBehaviour
     {
         instance = this;
     }
-
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(2))
-        {
-            isActive = !isActive;
-        }
-    }
 }
