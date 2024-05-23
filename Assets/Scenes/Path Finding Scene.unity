@@ -214,6 +214,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tiles: []
+  tilesTransform: []
   tile: {fileID: 1875602972835892524, guid: 3bb5fac4e5ac8854fb75f5dfa733bb41, type: 3}
   maxX: 35
   maxY: 19
@@ -322,7 +323,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 958988931}
-  - component: {fileID: 958988932}
   m_Layer: 0
   m_Name: PathManager
   m_TagString: Untagged
@@ -345,23 +345,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &958988932
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 958988930}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c96b9b11ea15c144b4d2298913cdca0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  startTile: {fileID: 8871526552831144231}
-  targetTile: {fileID: 8485959134511679832}
-  tiles: []
-  openTilePrefab: {fileID: 8096886140707024333, guid: a8776b1bdbdba39438295d9afe29bd44, type: 3}
-  closedTilePrefab: {fileID: 7175156601754942637, guid: 4568058154b79bf488b70fb07fd10dec, type: 3}
 --- !u!1 &2093232741
 GameObject:
   m_ObjectHideFlags: 0
