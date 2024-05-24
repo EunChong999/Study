@@ -1,25 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Dijkstra : MonoBehaviour
 {
-    public float step_cost;
-    public float waitTime;
+    public float straightStepCost = 1.0f;
+    public float diagonalStepCost = 1.4f;
 
     public List<Node> openList = new List<Node>();
     public List<Node> closeList = new List<Node>();
 
     public Node curNode;
-
-    WaitForSeconds waitForSeconds;
-
-    private void Start()
-    {
-        waitForSeconds = new WaitForSeconds(waitTime);
-    }
 
     private void Update()
     {
@@ -31,13 +22,13 @@ public class Dijkstra : MonoBehaviour
 
     private void FindPath(Node start)
     {
-       curNode = start;
-       StartCoroutine(RunPathFInd(curNode, curNode.transform.position));
+        curNode = start;
+        StartCoroutine(CheckNeighbours(curNode));
     }
 
-    IEnumerator RunPathFInd(Node parent, Vector3 pos)
+    IEnumerator CheckNeighbours(Node parent)
     {
-        // 부모 노드를 먼저 closeList에 추가
+        Vector3 pos = parent.transform.position;
         closeList.Add(parent);
         parent.isClosed = true;
 
@@ -47,77 +38,87 @@ public class Dijkstra : MonoBehaviour
 
             if (!n.isObs && !n.isClosed)
             {
-                // 좌표 값이 일치하면 노드 추가
-                if (pos.x == t.position.x + 1 && pos.y == t.position.y)
-                {
-                    // 중복 추가 방지
-                    if (!openList.Contains(n) && !closeList.Contains(n))
-                    {
-                        if (n == NodeManager.instance.endNode)
-                        {
-                            parent.VisualizePath();
-                            yield break;
-                        }
+                float additionalCost = 0;
+                bool isNeighbor = false;
 
-                        n.parentNode = parent;
-                        openList.Add(n);
-                        n.isOpen = true;
-                        n.g_cost = curNode.g_cost + step_cost;
+                // 상하좌우 및 대각선 방향 검사
+                if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y))
+                {
+                    isNeighbor = true;
+                    additionalCost = straightStepCost; // 오른쪽
+                }
+                else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y))
+                {
+                    isNeighbor = true;
+                    additionalCost = straightStepCost; // 왼쪽
+                }
+                else if (Mathf.Approximately(pos.x, t.position.x) && Mathf.Approximately(pos.y, t.position.y + 1))
+                {
+                    isNeighbor = true;
+                    additionalCost = straightStepCost; // 위
+                }
+                else if (Mathf.Approximately(pos.x, t.position.x) && Mathf.Approximately(pos.y, t.position.y - 1))
+                {
+                    isNeighbor = true;
+                    additionalCost = straightStepCost; // 아래
+                }
+                else if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y + 1))
+                {
+                    bool isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
+                    bool isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
+
+                    if (!isAboveObs && !isBelowObs)
+                    {
+                        isNeighbor = true;
+                        additionalCost = diagonalStepCost; // 오른쪽 위 대각선
                     }
                 }
-                // 오른쪽
-                else if (pos.x == t.position.x - 1 && pos.y == t.position.y)
+                else if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y - 1))
                 {
-                    // 중복 추가 방지
-                    if (!openList.Contains(n) && !closeList.Contains(n))
-                    {
-                        if (n == NodeManager.instance.endNode)
-                        {
-                            parent.VisualizePath();
-                            yield break;
-                        }
+                    bool isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
+                    bool isLeftObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x - 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
 
-                        n.parentNode = parent;
-                        openList.Add(n);
-                        n.isOpen = true;
-                        n.g_cost = curNode.g_cost + step_cost;
+                    if (!isAboveObs && !isLeftObs)
+                    {
+                        isNeighbor = true;
+                        additionalCost = diagonalStepCost; // 오른쪽 아래 대각선
                     }
                 }
-                // 위
-                else if (pos.x == t.position.x && pos.y == t.position.y - 1)
+                else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y + 1))
                 {
-                    // 중복 추가 방지
-                    if (!openList.Contains(n) && !closeList.Contains(n))
-                    {
-                        if (n == NodeManager.instance.endNode)
-                        {
-                            parent.VisualizePath();
-                            yield break;
-                        }
+                    bool isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
+                    bool isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
 
-                        n.parentNode = parent;
-                        openList.Add(n);
-                        n.isOpen = true;
-                        n.g_cost = curNode.g_cost + step_cost;
+                    if (!isRightObs && !isBelowObs)
+                    {
+                        isNeighbor = true;
+                        additionalCost = diagonalStepCost; // 왼쪽 위 대각선
                     }
                 }
-                // 아래
-                else if (pos.x == t.position.x && pos.y == t.position.y + 1)
+                else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y - 1))
                 {
-                    // 중복 추가 방지
-                    if (!openList.Contains(n) && !closeList.Contains(n))
-                    {
-                        if (n == NodeManager.instance.endNode)
-                        {
-                            parent.VisualizePath();
-                            yield break;
-                        }
+                    bool isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
+                    bool isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
 
-                        n.parentNode = parent;
-                        openList.Add(n);
-                        n.isOpen = true;
-                        n.g_cost = curNode.g_cost + step_cost;
+                    if (!isRightObs && !isAboveObs)
+                    {
+                        isNeighbor = true;
+                        additionalCost = diagonalStepCost; // 왼쪽 아래 대각선
                     }
+                }
+
+                if (isNeighbor && !openList.Contains(n) && !closeList.Contains(n))
+                {
+                    if (n == NodeManager.instance.endNode)
+                    {
+                        parent.VisualizePath();
+                        yield break;
+                    }
+
+                    n.parentNode = parent;
+                    openList.Add(n);
+                    n.isOpen = true;
+                    n.g_cost = parent.g_cost + additionalCost;
                 }
             }
         }
@@ -139,11 +140,11 @@ public class Dijkstra : MonoBehaviour
             }
         }
 
-        // 선택한 노드를 openList와 closeList에서 제거
+        // 선택한 노드를 openList에서 제거
         openList.Remove(n1);
 
         // 다음 노드를 체크하기 위해 재귀 호출
-        yield return waitForSeconds;
-        StartCoroutine(RunPathFInd(n1, n1.transform.position));
+        yield return new WaitForSeconds(0.01f);
+        StartCoroutine(CheckNeighbours(n1));
     }
 }
