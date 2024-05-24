@@ -5,12 +5,16 @@ using UnityEngine;
 
 public class Node : MonoBehaviour
 {
+    public float g_cost;
+
+    public bool isPath;
     public bool isNormal;
     public bool isObs;
     public bool isOpen;
     public bool isClosed;
 
     public Renderer meshRenderer;
+    public Node parentNode;
 
     private void Start()
     {
@@ -42,13 +46,13 @@ public class Node : MonoBehaviour
                 if (Input.GetMouseButtonDown(2))
                 {
                     if (isObs)
-                        ObsManager.instance.isActive = false;
+                        NodeManager.instance.isActive = false;
                     else
-                        ObsManager.instance.isActive = true;
+                        NodeManager.instance.isActive = true;
                 }
                 else if (Input.GetMouseButton(2))
                 {
-                    if (ObsManager.instance.isActive)
+                    if (NodeManager.instance.isActive)
                     {
                         isObs = true;
                         isNormal = false;
@@ -67,6 +71,11 @@ public class Node : MonoBehaviour
     {
         if (isObs)
             meshRenderer.sharedMaterial = NodeManager.instance.obsMat;
+        else if (isPath)
+        {
+            meshRenderer.sharedMaterial = NodeManager.instance.pathMat;
+            isNormal = false;
+        }
         else if (this == NodeManager.instance.startNode)
         {
             meshRenderer.sharedMaterial = NodeManager.instance.startMat;
@@ -77,10 +86,35 @@ public class Node : MonoBehaviour
             meshRenderer.sharedMaterial = NodeManager.instance.endMat;
             isNormal = false;
         }
+        else if (isClosed)
+        {
+            meshRenderer.sharedMaterial = NodeManager.instance.closeMat;
+            isOpen = false;
+            isNormal = false;
+        }
+        else if (isOpen)
+        {
+            meshRenderer.sharedMaterial = NodeManager.instance.openMat;
+            isClosed = false;
+            isNormal = false;
+        }
         else
         {
             meshRenderer.sharedMaterial = NodeManager.instance.normalMat;
             isNormal = true;
         }
+    }
+
+    public void VisualizePath()
+    {
+        isPath = true;
+
+        if (parentNode == NodeManager.instance.startNode)
+        {
+
+            return;
+        }
+
+        parentNode.VisualizePath();
     }
 }

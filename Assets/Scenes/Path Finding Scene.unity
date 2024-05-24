@@ -123,52 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &356423746
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 356423747}
-  - component: {fileID: 356423748}
-  m_Layer: 0
-  m_Name: ObsManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &356423747
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 356423746}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &356423748
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 356423746}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f271ba4e07b28db4e871d015e1129e68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  obs: {fileID: 5353694063111216302, guid: fb2ad8028084aff4f99bbd3641e3d096, type: 3}
-  isActive: 0
 --- !u!1 &373401375
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,7 +167,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f26cee64a1be2f04988dc82ef48b98f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isActive: 0
   nodeTransforms: []
+  pathMat: {fileID: 2100000, guid: 79f1210b54e9314468fe87e1b7a8e934, type: 2}
   normalMat: {fileID: 2100000, guid: 7d2beae1170bd504ca3b1dbb0e328e8e, type: 2}
   obsMat: {fileID: 2100000, guid: 9aef14858fb096c43a11aa68cb71f000, type: 2}
   startMat: {fileID: 2100000, guid: 3be6e203a9e4bbd419763f2fcccfa315, type: 2}
@@ -225,10 +181,6 @@ MonoBehaviour:
   node: {fileID: 1875602972835892524, guid: 3bb5fac4e5ac8854fb75f5dfa733bb41, type: 3}
   maxX: 35
   maxY: 19
-  start: {fileID: 0}
-  end: {fileID: 0}
-  startTemp: {fileID: 0}
-  endTemp: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -330,8 +282,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 958988931}
+  - component: {fileID: 958988932}
   m_Layer: 0
-  m_Name: PathManager
+  m_Name: PathFinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -350,8 +303,25 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &958988932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958988930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91fe477f8f77ac442864dc06911b7580, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  step_cost: 1
+  waitTime: 0.01
+  openList: []
+  closeList: []
+  curNode: {fileID: 0}
 --- !u!1 &2093232741
 GameObject:
   m_ObjectHideFlags: 0

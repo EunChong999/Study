@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class NodeManager : MonoBehaviour
 {
+    public bool isActive;
+
     public List<Transform> nodeTransforms;
 
+    public Material pathMat;
     public Material normalMat;
     public Material obsMat;
     public Material startMat;
