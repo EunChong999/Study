@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Dijkstra : MonoBehaviour
 {
-    public float straightStepCost = 1.0f;
-    public float diagonalStepCost = 1.4f;
+    private float straightStepCost = 1.0f;
+    private float diagonalStepCost = Mathf.Sqrt(2.0f);
 
     public List<Node> openList = new List<Node>();
     public List<Node> closeList = new List<Node>();
@@ -64,10 +64,12 @@ public class Dijkstra : MonoBehaviour
                 }
                 else if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y + 1))
                 {
-                    bool isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
-                    bool isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
+                    bool isAboveObs = false;
+                    bool isBelowObs = false;
+                    isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
+                    isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
 
-                    if (!isAboveObs && !isBelowObs)
+                    if (!isAboveObs || !isBelowObs)
                     {
                         isNeighbor = true;
                         additionalCost = diagonalStepCost; // 오른쪽 위 대각선
@@ -75,10 +77,12 @@ public class Dijkstra : MonoBehaviour
                 }
                 else if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y - 1))
                 {
-                    bool isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
-                    bool isLeftObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x - 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
+                    bool isAboveObs = false;
+                    bool isLeftObs = false;
+                    isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
+                    isLeftObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x - 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
 
-                    if (!isAboveObs && !isLeftObs)
+                    if (!isAboveObs || !isLeftObs)
                     {
                         isNeighbor = true;
                         additionalCost = diagonalStepCost; // 오른쪽 아래 대각선
@@ -86,10 +90,12 @@ public class Dijkstra : MonoBehaviour
                 }
                 else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y + 1))
                 {
-                    bool isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
-                    bool isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
+                    bool isRightObs = false;
+                    bool isBelowObs = false;
+                    isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
+                    isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
 
-                    if (!isRightObs && !isBelowObs)
+                    if (!isRightObs || !isBelowObs)
                     {
                         isNeighbor = true;
                         additionalCost = diagonalStepCost; // 왼쪽 위 대각선
@@ -97,10 +103,12 @@ public class Dijkstra : MonoBehaviour
                 }
                 else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y - 1))
                 {
-                    bool isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
-                    bool isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
+                    bool isRightObs = false;
+                    bool isAboveObs = false;
+                    isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
+                    isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
 
-                    if (!isRightObs && !isAboveObs)
+                    if (!isRightObs || !isAboveObs)
                     {
                         isNeighbor = true;
                         additionalCost = diagonalStepCost; // 왼쪽 아래 대각선

@@ -385,8 +385,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91fe477f8f77ac442864dc06911b7580, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  step_cost: 1
-  waitTime: 0.01
+  allowDiagonal: 1
+  crossCorners: 1
   openList: []
   closeList: []
   curNode: {fileID: 0}
