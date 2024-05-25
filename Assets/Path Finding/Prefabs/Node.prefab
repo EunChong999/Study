@@ -48,6 +48,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   g_cost: 0
+  h_cost: 100
+  f_cost: 100
   isPath: 0
   isNormal: 1
   isObs: 0

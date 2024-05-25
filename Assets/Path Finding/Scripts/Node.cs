@@ -6,6 +6,8 @@ using UnityEngine;
 public class Node : MonoBehaviour
 {
     public float g_cost;
+    public float h_cost;
+    public float f_cost;
 
     public bool isPath;
     public bool isNormal;
