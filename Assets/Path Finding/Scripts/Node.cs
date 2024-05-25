@@ -9,6 +9,9 @@ public class Node : MonoBehaviour
     public float h_cost;
     public float f_cost;
 
+    public int gridX;
+    public int gridY;
+
     public bool isPath;
     public bool isNormal;
     public bool isObs;
@@ -43,7 +46,8 @@ public class Node : MonoBehaviour
         }
         else
         {
-            if (this != NodeManager.instance.startNode && this != NodeManager.instance.endNode)
+            if (this != NodeManager.instance.startNode && 
+                this != NodeManager.instance.endNode)
             {
                 if (Input.GetMouseButtonDown(2))
                 {
@@ -56,13 +60,19 @@ public class Node : MonoBehaviour
                 {
                     if (NodeManager.instance.isActive)
                     {
-                        isObs = true;
-                        isNormal = false;
+                        if (isNormal)
+                        {
+                            isObs = true;
+                            isNormal = false;
+                        }
                     }
                     else
                     {
-                        isObs = false;
-                        isNormal = true;
+                        if (!isNormal)
+                        {
+                            isObs = false;
+                            isNormal = true;
+                        }
                     }
                 }
             }

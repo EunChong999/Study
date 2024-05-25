@@ -7,6 +7,7 @@ public class NodeManager : MonoBehaviour
     public bool isActive;
 
     public List<Transform> nodeTransforms;
+    public Node[,] nodes;
 
     public Material pathMat;
     public Material normalMat;
@@ -15,6 +16,7 @@ public class NodeManager : MonoBehaviour
     public Material endMat;
     public Material openMat;
     public Material closeMat;
+    public Material searchMat;
 
     public Node startNode;
     public Node endNode;
@@ -38,6 +40,10 @@ public class NodeManager : MonoBehaviour
         MakeTiles();
     }
 
+    public bool IsWithinBounds(int x, int y)
+    {
+        return x >= 0 && y >= 0 && x < maxX && y < maxY;
+    }
 
     private void MakeTiles()
     {
@@ -49,6 +55,8 @@ public class NodeManager : MonoBehaviour
             for (y = 0; y < maxY; y++)
             {
                 GameObject temp = Instantiate(node, new Vector3(x, y, 0), Quaternion.identity, transform);
+                temp.GetComponent<Node>().gridX = (int)x;
+                temp.GetComponent<Node>().gridY = (int)y;
                 nodeTransforms.Add(temp.transform);
             }
         }

@@ -244,6 +244,7 @@ MonoBehaviour:
   endMat: {fileID: 2100000, guid: d3a317a1d31cec540a068380595d23d6, type: 2}
   openMat: {fileID: 2100000, guid: 048b976df3982c2469825cc74545446e, type: 2}
   closeMat: {fileID: 2100000, guid: f201f9476053cd94c93a3b50b4a14949, type: 2}
+  searchMat: {fileID: 2100000, guid: 37a9f878e22ad84478f9e1973526cdf7, type: 2}
   startNode: {fileID: 0}
   endNode: {fileID: 0}
   node: {fileID: 1875602972835892524, guid: 3bb5fac4e5ac8854fb75f5dfa733bb41, type: 3}
@@ -352,6 +353,7 @@ GameObject:
   - component: {fileID: 958988931}
   - component: {fileID: 958988932}
   - component: {fileID: 958988933}
+  - component: {fileID: 958988934}
   m_Layer: 0
   m_Name: PathFinder
   m_TagString: Untagged
@@ -381,15 +383,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958988930}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91fe477f8f77ac442864dc06911b7580, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   allowDiagonal: 1
   crossCorners: 0
-  openList: []
-  closeList: []
   curNode: {fileID: 0}
 --- !u!114 &958988933
 MonoBehaviour:
@@ -398,13 +398,27 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958988930}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd3773703db9c904898a1332240f5173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   allowDiagonal: 1
-  crossCorners: 0
+  crossCorners: 1
+  closeList: []
+  curNode: {fileID: 0}
+--- !u!114 &958988934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958988930}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d2f995bb3407c54eb038f7c576eeafb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   openList: []
   closeList: []
   curNode: {fileID: 0}

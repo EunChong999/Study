@@ -11,8 +11,8 @@ public class Dijkstra : MonoBehaviour
     private float straightStepCost = 1.0f;
     private float diagonalStepCost = Mathf.Sqrt(2.0f);
 
-    public List<Node> openList = new List<Node>();
-    public List<Node> closeList = new List<Node>();
+    private PriorityQueue<Node> openList = new PriorityQueue<Node>();
+    private List<Node> closeList = new List<Node>();
 
     public Node curNode;
 
@@ -38,7 +38,7 @@ public class Dijkstra : MonoBehaviour
     IEnumerator CheckNeighbours(Node parent)
     {
         Vector3 pos = parent.transform.position;
-        closeList.Add(parent);
+        closeList.Add(parent); // 현재 노드를 closeList에 추가
         parent.isClosed = true;
 
         foreach (Transform t in NodeManager.instance.nodeTransforms)
@@ -171,7 +171,7 @@ public class Dijkstra : MonoBehaviour
                     }
                 }
 
-                if (isNeighbor && !openList.Contains(n) && !closeList.Contains(n))
+                if (isNeighbor && !openList.Contains(n))
                 {
                     if (n == NodeManager.instance.endNode)
                     {
@@ -180,7 +180,7 @@ public class Dijkstra : MonoBehaviour
                     }
 
                     n.parentNode = parent;
-                    openList.Add(n);
+                    openList.Enqueue(n, parent.g_cost + additionalCost);
                     n.isOpen = true;
                     n.g_cost = parent.g_cost + additionalCost;
                 }
@@ -194,18 +194,11 @@ public class Dijkstra : MonoBehaviour
         }
 
         // 가장 가까운 노드를 선택
-        Node n1 = openList[0];
+        Node n1 = openList.Dequeue();
 
-        foreach (Node n2 in openList)
-        {
-            if (n2.g_cost < n1.g_cost)
-            {
-                n1 = n2;
-            }
-        }
-
-        // 선택한 노드를 openList에서 제거
-        openList.Remove(n1);
+        // 선택한 노드를 closeList에 추가
+        closeList.Add(n1);
+        n1.isClosed = true;
 
         // 다음 노드를 체크하기 위해 재귀 호출
         yield return new WaitForSeconds(0.01f);

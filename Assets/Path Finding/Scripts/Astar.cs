@@ -11,7 +11,7 @@ public class Astar : MonoBehaviour
     private float straightStepCost = 1.0f;
     private float diagonalStepCost = Mathf.Sqrt(2.0f);
 
-    public List<Node> openList = new List<Node>();
+    public PriorityQueue<Node> openList = new PriorityQueue<Node>();
     public List<Node> closeList = new List<Node>();
 
     public Node curNode;
@@ -32,7 +32,17 @@ public class Astar : MonoBehaviour
     private void FindPath(Node start)
     {
         curNode = start;
+        start.g_cost = 0;
+        start.h_cost = CalculateHeuristic(start, NodeManager.instance.endNode);
+        start.f_cost = start.g_cost + start.h_cost;
         StartCoroutine(CheckNeighbours(curNode));
+    }
+
+    private float CalculateHeuristic(Node node, Node endNode)
+    {
+        Vector3 nodePos = node.transform.position;
+        Vector3 endPos = endNode.transform.position;
+        return Vector3.Distance(nodePos, endPos); // Euclidean Distance
     }
 
     IEnumerator CheckNeighbours(Node parent)
@@ -50,6 +60,7 @@ public class Astar : MonoBehaviour
                 float additionalCost = 0;
                 bool isNeighbor = false;
 
+                // 상하좌우 및 대각선 방향 검사
                 // 상하좌우 및 대각선 방향 검사
                 if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y))
                 {
@@ -183,7 +194,9 @@ public class Astar : MonoBehaviour
                     n.g_cost = parent.g_cost + additionalCost;
                     n.h_cost = Vector3.Distance(n.transform.position, NodeManager.instance.endNode.transform.position); // Heuristic cost
                     n.f_cost = n.g_cost + n.h_cost; // Total cost
-                    openList.Add(n);
+
+                    // Add node to PriorityQueue
+                    openList.Enqueue(n, n.f_cost);
                     n.isOpen = true;
                 }
             }
@@ -196,18 +209,7 @@ public class Astar : MonoBehaviour
         }
 
         // 가장 낮은 f_cost를 가진 노드를 선택
-        Node n1 = openList[0];
-
-        foreach (Node n2 in openList)
-        {
-            if (n2.f_cost < n1.f_cost || (n2.f_cost == n1.f_cost && n2.h_cost < n1.h_cost))
-            {
-                n1 = n2;
-            }
-        }
-
-        // 선택한 노드를 openList에서 제거
-        openList.Remove(n1);
+        Node n1 = openList.Dequeue();
 
         // 다음 노드를 체크하기 위해 재귀 호출
         yield return new WaitForSeconds(0.01f);
