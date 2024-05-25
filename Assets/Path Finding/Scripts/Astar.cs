@@ -5,14 +5,15 @@ using UnityEngine.SceneManagement;
 
 public class Astar : MonoBehaviour
 {
+    public bool applyHeuristic;
     public bool allowDiagonal;
     public bool crossCorners;
 
     private float straightStepCost = 1.0f;
     private float diagonalStepCost = Mathf.Sqrt(2.0f);
 
-    public PriorityQueue<Node> openList = new PriorityQueue<Node>();
-    public List<Node> closeList = new List<Node>();
+    private PriorityQueue<Node> openList = new PriorityQueue<Node>();
+    private List<Node> closeList = new List<Node>();
 
     public Node curNode;
 
@@ -32,9 +33,15 @@ public class Astar : MonoBehaviour
     private void FindPath(Node start)
     {
         curNode = start;
+
         start.g_cost = 0;
-        start.h_cost = CalculateHeuristic(start, NodeManager.instance.endNode);
-        start.f_cost = start.g_cost + start.h_cost;
+
+        if (applyHeuristic)
+        {
+            start.h_cost = CalculateHeuristic(start, NodeManager.instance.endNode);
+            start.f_cost = start.g_cost + start.h_cost;
+        }
+
         StartCoroutine(CheckNeighbours(curNode));
     }
 
@@ -60,7 +67,6 @@ public class Astar : MonoBehaviour
                 float additionalCost = 0;
                 bool isNeighbor = false;
 
-                // 상하좌우 및 대각선 방향 검사
                 // 상하좌우 및 대각선 방향 검사
                 if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y))
                 {
@@ -182,7 +188,7 @@ public class Astar : MonoBehaviour
                     }
                 }
 
-                if (isNeighbor && !openList.Contains(n) && !closeList.Contains(n))
+                if (isNeighbor && !openList.Contains(n))
                 {
                     if (n == NodeManager.instance.endNode)
                     {
@@ -191,12 +197,20 @@ public class Astar : MonoBehaviour
                     }
 
                     n.parentNode = parent;
-                    n.g_cost = parent.g_cost + additionalCost;
-                    n.h_cost = Vector3.Distance(n.transform.position, NodeManager.instance.endNode.transform.position); // Heuristic cost
-                    n.f_cost = n.g_cost + n.h_cost; // Total cost
 
-                    // Add node to PriorityQueue
-                    openList.Enqueue(n, n.f_cost);
+                    n.g_cost = parent.g_cost + additionalCost;
+
+                    if (applyHeuristic)
+                    {
+                        n.h_cost = Vector3.Distance(n.transform.position, NodeManager.instance.endNode.transform.position); // Heuristic cost
+                        n.f_cost = n.g_cost + n.h_cost; // Total cost
+                        openList.Enqueue(n, n.f_cost);
+                    }
+                    else
+                    {
+                        openList.Enqueue(n, parent.g_cost + additionalCost);
+                    }
+
                     n.isOpen = true;
                 }
             }

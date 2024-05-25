@@ -12,6 +12,7 @@ public class Node : MonoBehaviour
     public int gridX;
     public int gridY;
 
+    public bool isSearch;
     public bool isPath;
     public bool isNormal;
     public bool isObs;
@@ -108,6 +109,12 @@ public class Node : MonoBehaviour
         {
             meshRenderer.sharedMaterial = NodeManager.instance.openMat;
             isClosed = false;
+            isNormal = false;
+        }
+        else if (isSearch)
+        {
+            meshRenderer.sharedMaterial = NodeManager.instance.searchMat;
+            isSearch = true;
             isNormal = false;
         }
         else
