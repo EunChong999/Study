@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Dijkstra : MonoBehaviour
 {
@@ -20,6 +21,11 @@ public class Dijkstra : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             FindPath(NodeManager.instance.startNode);
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 
@@ -69,14 +75,14 @@ public class Dijkstra : MonoBehaviour
                 {
                     if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y + 1))
                     {
-                        bool isAboveObs = false;
+                        bool isLeftObs = false;
                         bool isBelowObs = false;
-                        isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
+                        isLeftObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x - 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
                         isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
 
                         if (crossCorners)
                         {
-                            if (!isAboveObs || !isBelowObs)
+                            if (!isLeftObs || !isBelowObs)
                             {
                                 isNeighbor = true;
                                 additionalCost = diagonalStepCost; // 오른쪽 위 대각선
@@ -84,7 +90,7 @@ public class Dijkstra : MonoBehaviour
                         }
                         else
                         {
-                            if (!isAboveObs && !isBelowObs)
+                            if (!isLeftObs && !isBelowObs)
                             {
                                 isNeighbor = true;
                                 additionalCost = diagonalStepCost; // 오른쪽 위 대각선

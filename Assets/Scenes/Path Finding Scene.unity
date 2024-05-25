@@ -386,7 +386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allowDiagonal: 1
-  crossCorners: 1
+  crossCorners: 0
   openList: []
   closeList: []
   curNode: {fileID: 0}
