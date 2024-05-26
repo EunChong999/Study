@@ -121,9 +121,11 @@ public class JumpPointSearch : MonoBehaviour
         if (nextNode == NodeManager.instance.endNode)
             return nextNode; // 목표 노드를 반환하여 탐색 종료
 
-        // 이동할 노드가 강제 이웃인 경우 (이웃 노드가 장애물인 경우)
-        if (IsForcedNeighbor(nextNode, direction))
-            return nextNode; // 이웃 노드를 반환하여 탐색 종료
+        // 강제 이웃 검사
+        if (IsForcedNeighbor(node, nextNode, direction))
+        {
+            return nextNode;
+        }
 
         // 대각선 이동인 경우
         if (direction.x != 0 && direction.y != 0)
@@ -163,42 +165,48 @@ public class JumpPointSearch : MonoBehaviour
         node.isSearch = true;
     }
 
-    private bool IsForcedNeighbor(Node node, Vector2 direction)
+    private bool IsForcedNeighbor(Node currentNode, Node nextNode, Vector2 direction)
     {
-        int x = node.gridX;
-        int y = node.gridY;
+        int cx = currentNode.gridX;
+        int cy = currentNode.gridY;
+        int nx = nextNode.gridX;
+        int ny = nextNode.gridY;
 
-        // 수평 방향으로의 강제 이웃인지 검사
         if (direction.x != 0 && direction.y == 0)
         {
-            // 위쪽 이웃 노드가 없거나 장애물이면서
-            // 이동할 노드 왼쪽 위 노드가 비어 있지 않고, 이동할 노드 왼쪽 위 노드가 범위 내에 있으면
-            if ((!NodeManager.instance.IsWithinBounds(x, y + 1) || NodeManager.instance.nodes[x, y + 1].isObs) &&
-                NodeManager.instance.IsWithinBounds(x + (int)direction.x, y + 1) && !NodeManager.instance.nodes[x + (int)direction.x, y + 1].isObs)
-                return true; // 강제 이웃으로 판단
-
-            // 아래쪽 이웃 노드가 없거나 장애물이면서
-            // 이동할 노드 왼쪽 아래 노드가 비어 있지 않고, 이동할 노드 왼쪽 아래 노드가 범위 내에 있으면
-            if ((!NodeManager.instance.IsWithinBounds(x, y - 1) || NodeManager.instance.nodes[x, y - 1].isObs) &&
-                NodeManager.instance.IsWithinBounds(x + (int)direction.x, y - 1) && !NodeManager.instance.nodes[x + (int)direction.x, y - 1].isObs)
-                return true; // 강제 이웃으로 판단
+            // 수평 이동 시
+            if ((NodeManager.instance.IsWithinBounds(cx, cy + 1) && NodeManager.instance.nodes[cx, cy + 1].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx, ny + 1) && !NodeManager.instance.nodes[nx, ny + 1].isObs) ||
+                (NodeManager.instance.IsWithinBounds(cx, cy - 1) && NodeManager.instance.nodes[cx, cy - 1].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx, ny - 1) && !NodeManager.instance.nodes[nx, ny - 1].isObs))
+            {
+                return true;
+            }
         }
-        // 수직 방향으로의 강제 이웃인지 검사
-        else if (direction.y != 0 && direction.x == 0)
+        else if (direction.x == 0 && direction.y != 0)
         {
-            // 오른쪽 이웃 노드가 없거나 장애물이면서
-            // 이동할 노드 오른쪽 위 노드가 비어 있지 않고, 이동할 노드 오른쪽 위 노드가 범위 내에 있으면
-            if ((!NodeManager.instance.IsWithinBounds(x + 1, y) || NodeManager.instance.nodes[x + 1, y].isObs) &&
-                NodeManager.instance.IsWithinBounds(x + 1, y + (int)direction.y) && !NodeManager.instance.nodes[x + 1, y + (int)direction.y].isObs)
-                return true; // 강제 이웃으로 판단
-
-            // 왼쪽 이웃 노드가 없거나 장애물이면서
-            // 이동할 노드 왼쪽 위 노드가 비어 있지 않고, 이동할 노드 왼쪽 위 노드가 범위 내에 있으면
-            if ((!NodeManager.instance.IsWithinBounds(x - 1, y) || NodeManager.instance.nodes[x - 1, y].isObs) &&
-                NodeManager.instance.IsWithinBounds(x - 1, y + (int)direction.y) && !NodeManager.instance.nodes[x - 1, y + (int)direction.y].isObs)
-                return true; // 강제 이웃으로 판단
+            // 수직 이동 시
+            if ((NodeManager.instance.IsWithinBounds(cx + 1, cy) && NodeManager.instance.nodes[cx + 1, cy].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx + 1, ny) && !NodeManager.instance.nodes[nx + 1, ny].isObs) ||
+                (NodeManager.instance.IsWithinBounds(cx - 1, cy) && NodeManager.instance.nodes[cx - 1, cy].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx - 1, ny) && !NodeManager.instance.nodes[nx - 1, ny].isObs))
+            {
+                return true;
+            }
         }
-        return false; // 강제 이웃이 아님
+        else if (direction.x != 0 && direction.y != 0)
+        {
+            // 대각선 이동 시
+            if ((NodeManager.instance.IsWithinBounds(cx - (int)direction.x, cy) && NodeManager.instance.nodes[cx - (int)direction.x, cy].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx - (int)direction.x, ny) && !NodeManager.instance.nodes[nx - (int)direction.x, ny].isObs) ||
+                (NodeManager.instance.IsWithinBounds(cx, cy - (int)direction.y) && NodeManager.instance.nodes[cx, cy - (int)direction.y].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx, ny - (int)direction.y) && !NodeManager.instance.nodes[nx, ny - (int)direction.y].isObs))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool IsDiagonalBlocked(Node node, Vector2 direction)

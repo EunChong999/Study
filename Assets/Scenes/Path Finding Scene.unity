@@ -355,6 +355,7 @@ GameObject:
   - component: {fileID: 958988932}
   - component: {fileID: 958988933}
   - component: {fileID: 958988934}
+  - component: {fileID: 958988935}
   m_Layer: 0
   m_Name: PathFinder
   m_TagString: Untagged
@@ -422,6 +423,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   visualizeRecursion: 1
   curNode: {fileID: 0}
+--- !u!114 &958988935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958988930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69f03ea769b7c724f93895b8d27d03c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nodesBetweenPoints: []
 --- !u!1 &1148156616
 GameObject:
   m_ObjectHideFlags: 0
