@@ -38,7 +38,7 @@ public class JumpPointSearch : MonoBehaviour
         start.g_cost = 0;
         start.h_cost = CalculateHeuristic(start, NodeManager.instance.endNode);
         start.f_cost = start.g_cost + start.h_cost;
-        
+
         SearchPath();
     }
 
@@ -76,7 +76,7 @@ public class JumpPointSearch : MonoBehaviour
 
     private void IdentifySuccessors(Node node)
     {
-        foreach (Vector2 dir in GetDirections(node))
+        foreach (Vector2 dir in GetDirections())
         {
             Node jumpNode = Jump(node, dir);
             if (jumpNode != null && !closeList.Contains(jumpNode))
@@ -96,94 +96,47 @@ public class JumpPointSearch : MonoBehaviour
 
     private Node Jump(Node node, Vector2 direction)
     {
+        // 다음 이동할 노드의 좌표 계산
         int x = node.gridX + (int)direction.x;
         int y = node.gridY + (int)direction.y;
 
-        if (!NodeManager.instance.IsWithinBounds(x, y) || NodeManager.instance.nodes[x, y].isObs)
+        // 다음 이동할 노드가 범위를 벗어나거나 장애물인 경우
+        if (!NodeManager.instance.IsWithinBounds(x, y) || NodeManager.instance.nodes[x, y].isObs || IsDiagonalBlocked(node, direction))
         {
-            return null;
+            return null; // 유효한 이동이 아니므로 null 반환
         }
 
+        // 다음 이동할 노드
         Node nextNode = NodeManager.instance.nodes[x, y];
 
-        if (nextNode.isObs)
-            return null;
-
+        // 시각적 재귀 표시가 활성화된 경우
         if (visualizeRecursion)
         {
+            // 다음 노드가 이미 탐색되지 않았다면
             if (!nextNode.isSearch)
-                coroutine = StartCoroutine(DelayJump(nextNode));
+                coroutine = StartCoroutine(DelayJump(nextNode)); // 딜레이를 주고 재귀 호출 시작
         }
 
+        // 다음 노드가 목표 노드인 경우
         if (nextNode == NodeManager.instance.endNode)
-            return nextNode;
+            return nextNode; // 목표 노드를 반환하여 탐색 종료
 
-        if (IsForcedNeighbor(node, nextNode, direction))
-            return nextNode;
+        // 이동할 노드가 강제 이웃인 경우 (이웃 노드가 장애물인 경우)
+        if (IsForcedNeighbor(nextNode, direction))
+            return nextNode; // 이웃 노드를 반환하여 탐색 종료
 
-        // 대각선 이동 시 직선 경로 검사
+        // 대각선 이동인 경우
         if (direction.x != 0 && direction.y != 0)
         {
-            Node jumpX = Jump(nextNode, new Vector2(direction.x, 0));
-            Node jumpY = Jump(nextNode, new Vector2(0, direction.y));
-
-            // 대각선 방향으로 직선 경로에 장애물이 있으면 해당 방향으로의 이동을 제한합니다.
-            if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) &&
-                (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
-            {
-                return null;
-            }
-            // 부모 노드 기준으로 오른쪽 대각선 위에 있을 때
-            else if (direction.x > 0 && direction.y > 0)
-            {
-                // 왼쪽 노드와 아래 노드의 isObs 검사
-                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
-                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
-                {
-                    return null; // 이동 제한
-                }
-            }
-            // 부모 노드 기준으로 오른쪽 대각선 아래에 있을 때
-            else if (direction.x > 0 && direction.y < 0)
-            {
-                // 왼쪽 노드와 위 노드의 isObs 검사
-                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
-                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
-                {
-                    return null; // 이동 제한
-                }
-            }
-            // 부모 노드 기준으로 왼쪽 대각선 아래에 있을 때
-            else if (direction.x < 0 && direction.y < 0)
-            {
-                // 오른쪽 노드와 위 노드의 isObs 검사
-                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
-                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
-                {
-                    return null; // 이동 제한
-                }
-            }
-            // 부모 노드 기준으로 왼쪽 대각선 위에 있을 때
-            else if (direction.x < 0 && direction.y > 0)
-            {
-                // 오른쪽 노드와 아래 노드의 isObs 검사
-                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
-                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
-                {
-                    return null; // 이동 제한
-                }
-            }
-
-            // 대각선 방향으로 이동할 수 있으면 다음 노드 반환
-            if (jumpX != null || jumpY != null)
-            {
-                return nextNode;
-            }
+            // 대각선 방향으로의 이동을 고려하여 재귀 호출
+            if (Jump(nextNode, new Vector2(direction.x, 0)) != null || Jump(nextNode, new Vector2(0, direction.y)) != null)
+                return nextNode; // 이동 가능한 경우 다음 노드를 반환하여 탐색 종료
         }
 
-        // 다음 노드로 재귀적으로 점프
+        // 대각선 이동이 아닌 경우, 현재 방향으로 이동을 계속 진행
         return Jump(nextNode, direction);
     }
+
 
     IEnumerator DelayJump(Node node)
     {
@@ -210,49 +163,71 @@ public class JumpPointSearch : MonoBehaviour
         node.isSearch = true;
     }
 
-    private bool IsForcedNeighbor(Node currentNode, Node nextNode, Vector2 direction)
+    private bool IsForcedNeighbor(Node node, Vector2 direction)
     {
-        int cx = currentNode.gridX;
-        int cy = currentNode.gridY;
-        int nx = nextNode.gridX;
-        int ny = nextNode.gridY;
+        int x = node.gridX;
+        int y = node.gridY;
 
+        // 수평 방향으로의 강제 이웃인지 검사
         if (direction.x != 0 && direction.y == 0)
         {
-            // 수평 이동 시
-            if ((NodeManager.instance.IsWithinBounds(cx, cy + 1) && NodeManager.instance.nodes[cx, cy + 1].isObs &&
-                 NodeManager.instance.IsWithinBounds(nx, ny + 1) && !NodeManager.instance.nodes[nx, ny + 1].isObs) ||
-                (NodeManager.instance.IsWithinBounds(cx, cy - 1) && NodeManager.instance.nodes[cx, cy - 1].isObs &&
-                 NodeManager.instance.IsWithinBounds(nx, ny - 1) && !NodeManager.instance.nodes[nx, ny - 1].isObs))
-            {
-                return true;
-            }
+            // 위쪽 이웃 노드가 없거나 장애물이면서
+            // 이동할 노드 왼쪽 위 노드가 비어 있지 않고, 이동할 노드 왼쪽 위 노드가 범위 내에 있으면
+            if ((!NodeManager.instance.IsWithinBounds(x, y + 1) || NodeManager.instance.nodes[x, y + 1].isObs) &&
+                NodeManager.instance.IsWithinBounds(x + (int)direction.x, y + 1) && !NodeManager.instance.nodes[x + (int)direction.x, y + 1].isObs)
+                return true; // 강제 이웃으로 판단
+
+            // 아래쪽 이웃 노드가 없거나 장애물이면서
+            // 이동할 노드 왼쪽 아래 노드가 비어 있지 않고, 이동할 노드 왼쪽 아래 노드가 범위 내에 있으면
+            if ((!NodeManager.instance.IsWithinBounds(x, y - 1) || NodeManager.instance.nodes[x, y - 1].isObs) &&
+                NodeManager.instance.IsWithinBounds(x + (int)direction.x, y - 1) && !NodeManager.instance.nodes[x + (int)direction.x, y - 1].isObs)
+                return true; // 강제 이웃으로 판단
         }
-        else if (direction.x == 0 && direction.y != 0)
+        // 수직 방향으로의 강제 이웃인지 검사
+        else if (direction.y != 0 && direction.x == 0)
         {
-            // 수직 이동 시
-            if ((NodeManager.instance.IsWithinBounds(cx + 1, cy) && NodeManager.instance.nodes[cx + 1, cy].isObs &&
-                 NodeManager.instance.IsWithinBounds(nx + 1, ny) && !NodeManager.instance.nodes[nx + 1, ny].isObs) ||
-                (NodeManager.instance.IsWithinBounds(cx - 1, cy) && NodeManager.instance.nodes[cx - 1, cy].isObs &&
-                 NodeManager.instance.IsWithinBounds(nx - 1, ny) && !NodeManager.instance.nodes[nx - 1, ny].isObs))
-            {
-                return true;
-            }
+            // 오른쪽 이웃 노드가 없거나 장애물이면서
+            // 이동할 노드 오른쪽 위 노드가 비어 있지 않고, 이동할 노드 오른쪽 위 노드가 범위 내에 있으면
+            if ((!NodeManager.instance.IsWithinBounds(x + 1, y) || NodeManager.instance.nodes[x + 1, y].isObs) &&
+                NodeManager.instance.IsWithinBounds(x + 1, y + (int)direction.y) && !NodeManager.instance.nodes[x + 1, y + (int)direction.y].isObs)
+                return true; // 강제 이웃으로 판단
+
+            // 왼쪽 이웃 노드가 없거나 장애물이면서
+            // 이동할 노드 왼쪽 위 노드가 비어 있지 않고, 이동할 노드 왼쪽 위 노드가 범위 내에 있으면
+            if ((!NodeManager.instance.IsWithinBounds(x - 1, y) || NodeManager.instance.nodes[x - 1, y].isObs) &&
+                NodeManager.instance.IsWithinBounds(x - 1, y + (int)direction.y) && !NodeManager.instance.nodes[x - 1, y + (int)direction.y].isObs)
+                return true; // 강제 이웃으로 판단
         }
-        else if (direction.x != 0 && direction.y != 0)
+        return false; // 강제 이웃이 아님
+    }
+
+    private bool IsDiagonalBlocked(Node node, Vector2 direction)
+    {
+        int x = node.gridX + (int)direction.x;
+        int y = node.gridY + (int)direction.y;
+
+        // 대각선 이동할 위치가 맵 밖이거나 장애물인 경우 true 반환
+        if (!NodeManager.instance.IsWithinBounds(x, y) || NodeManager.instance.nodes[x, y].isObs)
         {
-            // 대각선 이동 시
-            if ((NodeManager.instance.IsWithinBounds(cx - (int)direction.x, cy) && NodeManager.instance.nodes[cx - (int)direction.x, cy].isObs &&
-                 NodeManager.instance.IsWithinBounds(nx - (int)direction.x, ny) && !NodeManager.instance.nodes[nx - (int)direction.x, ny].isObs) ||
-                (NodeManager.instance.IsWithinBounds(cx, cy - (int)direction.y) && NodeManager.instance.nodes[cx, cy - (int)direction.y].isObs &&
-                 NodeManager.instance.IsWithinBounds(nx, ny - (int)direction.y) && !NodeManager.instance.nodes[nx, ny - (int)direction.y].isObs))
+            return true;
+        }
+
+        // 대각선 방향으로 이동할 때, 인접한 두 개의 노드가 모두 장애물이면 true 반환
+        int adjacentX = node.gridX + Mathf.RoundToInt(direction.x);
+        int adjacentY = node.gridY;
+        if (NodeManager.instance.IsWithinBounds(adjacentX, adjacentY) && NodeManager.instance.nodes[adjacentX, adjacentY].isObs)
+        {
+            adjacentX = node.gridX;
+            adjacentY = node.gridY + Mathf.RoundToInt(direction.y);
+            if (NodeManager.instance.IsWithinBounds(adjacentX, adjacentY) && NodeManager.instance.nodes[adjacentX, adjacentY].isObs)
             {
                 return true;
             }
         }
 
-        return false;
+        return false; // 대각선 방향으로 이동 가능
     }
+
 
     private float CalculateCost(Node node, Node nextNode)
     {
@@ -266,37 +241,16 @@ public class JumpPointSearch : MonoBehaviour
         }
     }
 
-    private List<Vector2> GetDirections(Node node)
+    // 가능한 방향 목록을 반환합니다.
+    private List<Vector2> GetDirections()
     {
         List<Vector2> directions = new List<Vector2>
         {
-            Vector2.up,
-            Vector2.down,
-            Vector2.left,
-            Vector2.right
+            Vector2.up, Vector2.down, Vector2.left, Vector2.right
         };
 
-        void AddDiagonalDirection(Vector2 direction, Vector2 check1, Vector2 check2)
-        {
-            int x1 = node.gridX + (int)check1.x;
-            int y1 = node.gridY + (int)check1.y;
-            int x2 = node.gridX + (int)check2.x;
-            int y2 = node.gridY + (int)check2.y;
-
-            bool check1Valid = NodeManager.instance.IsWithinBounds(x1, y1) && !NodeManager.instance.nodes[x1, y1].isObs;
-            bool check2Valid = NodeManager.instance.IsWithinBounds(x2, y2) && !NodeManager.instance.nodes[x2, y2].isObs;
-
-            // 해당 대각선 방향의 주변에 장애물이 없고, 두 직선 경로가 모두 유효할 때 대각선 방향 추가
-            if (check1Valid || check2Valid)
-            {
-                directions.Add(direction);
-            }
-        }
-
-        AddDiagonalDirection(Vector2.up + Vector2.left, Vector2.left, Vector2.up);
-        AddDiagonalDirection(Vector2.up + Vector2.right, Vector2.right, Vector2.up);
-        AddDiagonalDirection(Vector2.down + Vector2.left, Vector2.left, Vector2.down);
-        AddDiagonalDirection(Vector2.down + Vector2.right, Vector2.right, Vector2.down);
+        // 대각선 방향을 추가합니다.
+        directions.AddRange(new List<Vector2> { Vector2.up + Vector2.left, Vector2.up + Vector2.right, Vector2.down + Vector2.left, Vector2.down + Vector2.right });
 
         return directions;
     }
