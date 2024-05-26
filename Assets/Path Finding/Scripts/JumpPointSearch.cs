@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class JPS : MonoBehaviour
+public class JumpPointSearch : MonoBehaviour
 {
     public int searchCount;
     public int preSearchCount;
@@ -31,11 +31,6 @@ public class JPS : MonoBehaviour
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
-
-        if (searchCount == preSearchCount && endNode != null)
-        {
-            endNode.VisualizePath();
-        }
     }
 
     private void FindPath(Node start)
@@ -44,7 +39,7 @@ public class JPS : MonoBehaviour
         start.g_cost = 0;
         start.h_cost = CalculateHeuristic(start, NodeManager.instance.endNode);
         start.f_cost = start.g_cost + start.h_cost;
-
+        
         SearchPath();
     }
 
@@ -140,9 +135,13 @@ public class JPS : MonoBehaviour
 
         yield return waitForSeconds;
 
-        searchCount++;
+        if (node == NodeManager.instance.endNode)
+        {
+            endNode.VisualizePath();
+            StopAllCoroutines();
+        }
 
-        Debug.Log(node.transform.position);
+        searchCount++;
 
         node.isSearch = true;
     }
