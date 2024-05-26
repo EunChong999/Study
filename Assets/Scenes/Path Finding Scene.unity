@@ -398,14 +398,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958988930}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd3773703db9c904898a1332240f5173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   applyHeuristic: 1
   allowDiagonal: 1
-  crossCorners: 1
+  crossCorners: 0
   curNode: {fileID: 0}
 --- !u!114 &958988934
 MonoBehaviour:
@@ -414,13 +414,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958988930}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d2f995bb3407c54eb038f7c576eeafb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  openList: []
-  closeList: []
+  applyHeuristic: 1
   curNode: {fileID: 0}
 --- !u!1 &1148156616
 GameObject:

@@ -223,10 +223,10 @@ public class Astar : MonoBehaviour
         }
 
         // 가장 낮은 f_cost를 가진 노드를 선택
-        Node n1 = openList.Dequeue();
+        Node lowestN = openList.Dequeue();
 
         // 다음 노드를 체크하기 위해 재귀 호출
         yield return new WaitForSeconds(0.01f);
-        StartCoroutine(CheckNeighbours(n1));
+        StartCoroutine(CheckNeighbours(lowestN));
     }
 }

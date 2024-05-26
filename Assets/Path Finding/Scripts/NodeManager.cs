@@ -7,7 +7,8 @@ public class NodeManager : MonoBehaviour
     public bool isActive;
 
     public List<Transform> nodeTransforms;
-    public Node[,] nodes;
+    public List<Node> searchNodes;
+    public Node[,] nodes = new Node[0, 0];
 
     public Material pathMat;
     public Material normalMat;
@@ -23,10 +24,8 @@ public class NodeManager : MonoBehaviour
 
     [SerializeField]
     private GameObject node;
-    [SerializeField]
-    private int maxX;
-    [SerializeField]
-    private int maxY;
+    public int maxX;
+    public int maxY;
 
     public static NodeManager instance;
 
@@ -37,6 +36,7 @@ public class NodeManager : MonoBehaviour
 
     private void Start()
     {
+        nodes = new Node[(int)maxX, (int)maxY];
         MakeTiles();
     }
 
@@ -57,7 +57,9 @@ public class NodeManager : MonoBehaviour
                 GameObject temp = Instantiate(node, new Vector3(x, y, 0), Quaternion.identity, transform);
                 temp.GetComponent<Node>().gridX = (int)x;
                 temp.GetComponent<Node>().gridY = (int)y;
+                nodes[temp.GetComponent<Node>().gridX, temp.GetComponent<Node>().gridY] = temp.GetComponent<Node>();
                 nodeTransforms.Add(temp.transform);
+                searchNodes.Add(temp.GetComponent<Node>());
             }
         }
 

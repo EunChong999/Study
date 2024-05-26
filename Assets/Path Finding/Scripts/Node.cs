@@ -126,13 +126,11 @@ public class Node : MonoBehaviour
 
     public void VisualizePath()
     {
-        isPath = true;
+        if (this != NodeManager.instance.endNode)
+            isPath = true;
 
         if (parentNode == NodeManager.instance.startNode)
-        {
-
             return;
-        }
 
         parentNode.VisualizePath();
     }
