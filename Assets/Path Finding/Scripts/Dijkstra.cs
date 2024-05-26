@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Dijkstra : MonoBehaviour
 {
+    public Toggle allowDiagonalToggle;
+    public Toggle crossCornersToggle;
+
     public bool allowDiagonal;
     public bool crossCorners;
 
@@ -16,21 +19,13 @@ public class Dijkstra : MonoBehaviour
 
     public Node curNode;
 
-    private void Update()
+    public void FindPath()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            FindPath(NodeManager.instance.startNode);
-        }
+        Node start = NodeManager.instance.startNode;
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-    }
+        allowDiagonal = allowDiagonalToggle.isOn;
+        crossCorners = crossCornersToggle.isOn;
 
-    private void FindPath(Node start)
-    {
         curNode = start;
         StartCoroutine(CheckNeighbours(curNode));
     }

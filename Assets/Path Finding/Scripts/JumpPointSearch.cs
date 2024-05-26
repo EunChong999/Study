@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class JumpPointSearch : MonoBehaviour
 {
+    public Toggle visualizeRecursionToggle;
+
     public bool visualizeRecursion;
 
     private Node endNode;
@@ -19,21 +21,12 @@ public class JumpPointSearch : MonoBehaviour
 
     public Node curNode;
 
-    private void Update()
+    public void FindPath()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            FindPath(NodeManager.instance.startNode);
-        }
+        Node start = NodeManager.instance.startNode;
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-    }
+        visualizeRecursion = visualizeRecursionToggle.isOn;
 
-    private void FindPath(Node start)
-    {
         curNode = start;
         start.g_cost = 0;
         start.h_cost = CalculateHeuristic(start, NodeManager.instance.endNode);

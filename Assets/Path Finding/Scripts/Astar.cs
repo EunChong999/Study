@@ -1,10 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Astar : MonoBehaviour
 {
+    public Toggle applyHeuristicToggle;
+    public Toggle allowDiagonalToggle;
+    public Toggle crossCornersToggle;
+
     public bool applyHeuristic;
     public bool allowDiagonal;
     public bool crossCorners;
@@ -17,21 +21,14 @@ public class Astar : MonoBehaviour
 
     public Node curNode;
 
-    private void Update()
+    public void FindPath()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            FindPath(NodeManager.instance.startNode);
-        }
+        Node start = NodeManager.instance.startNode;
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-        }
-    }
+        applyHeuristic = applyHeuristicToggle.isOn;
+        allowDiagonal = allowDiagonalToggle.isOn;
+        crossCorners = crossCornersToggle.isOn;
 
-    private void FindPath(Node start)
-    {
         curNode = start;
 
         start.g_cost = 0;

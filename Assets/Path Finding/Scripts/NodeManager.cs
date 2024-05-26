@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NodeManager : MonoBehaviour
 {
@@ -38,6 +39,11 @@ public class NodeManager : MonoBehaviour
     {
         nodes = new Node[maxX, maxY];
         MakeTiles();
+    }
+
+    public void Reload()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public bool IsWithinBounds(int x, int y)
