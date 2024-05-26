@@ -36,7 +36,7 @@ public class NodeManager : MonoBehaviour
 
     private void Start()
     {
-        nodes = new Node[(int)maxX, (int)maxY];
+        nodes = new Node[maxX, maxY];
         MakeTiles();
     }
 

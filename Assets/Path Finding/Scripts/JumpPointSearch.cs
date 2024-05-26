@@ -1,14 +1,13 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class JumpPointSearch : MonoBehaviour
 {
-    public int searchCount;
-    public int preSearchCount;
-    public Node endNode;
+    public bool visualizeRecursion;
 
+    private Node endNode;
     private float straightStepCost = 1.0f;
     private float diagonalStepCost = Mathf.Sqrt(2.0f);
 
@@ -62,6 +61,13 @@ public class JumpPointSearch : MonoBehaviour
             if (current == NodeManager.instance.endNode)
             {
                 endNode = current;
+
+                if (!visualizeRecursion)
+                {
+                    endNode.VisualizePath();
+                }
+
+                return;
             }
 
             IdentifySuccessors(current);
@@ -100,20 +106,82 @@ public class JumpPointSearch : MonoBehaviour
 
         Node nextNode = NodeManager.instance.nodes[x, y];
 
-        if (!nextNode.isSearch) // ���� ��尡 Ž������ �ʾ��� ���� �����̸� �߰�
-            coroutine = StartCoroutine(DelayJump(nextNode));
+        if (nextNode.isObs)
+            return null;
+
+        if (visualizeRecursion)
+        {
+            if (!nextNode.isSearch)
+                coroutine = StartCoroutine(DelayJump(nextNode));
+        }
 
         if (nextNode == NodeManager.instance.endNode)
             return nextNode;
 
-        if (IsForcedNeighbor(nextNode, direction))
+        if (IsForcedNeighbor(node, nextNode, direction))
             return nextNode;
 
+        // 대각선 이동 시 직선 경로 검사
         if (direction.x != 0 && direction.y != 0)
         {
-            if (Jump(nextNode, new Vector2(direction.x, 0)) != null || Jump(nextNode, new Vector2(0, direction.y)) != null)
+            Node jumpX = Jump(nextNode, new Vector2(direction.x, 0));
+            Node jumpY = Jump(nextNode, new Vector2(0, direction.y));
+
+            // 대각선 방향으로 직선 경로에 장애물이 있으면 해당 방향으로의 이동을 제한합니다.
+            if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) &&
+                (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
+            {
+                return null;
+            }
+            // 부모 노드 기준으로 오른쪽 대각선 위에 있을 때
+            else if (direction.x > 0 && direction.y > 0)
+            {
+                // 왼쪽 노드와 아래 노드의 isObs 검사
+                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
+                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
+                {
+                    return null; // 이동 제한
+                }
+            }
+            // 부모 노드 기준으로 오른쪽 대각선 아래에 있을 때
+            else if (direction.x > 0 && direction.y < 0)
+            {
+                // 왼쪽 노드와 위 노드의 isObs 검사
+                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
+                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
+                {
+                    return null; // 이동 제한
+                }
+            }
+            // 부모 노드 기준으로 왼쪽 대각선 아래에 있을 때
+            else if (direction.x < 0 && direction.y < 0)
+            {
+                // 오른쪽 노드와 위 노드의 isObs 검사
+                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
+                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
+                {
+                    return null; // 이동 제한
+                }
+            }
+            // 부모 노드 기준으로 왼쪽 대각선 위에 있을 때
+            else if (direction.x < 0 && direction.y > 0)
+            {
+                // 오른쪽 노드와 아래 노드의 isObs 검사
+                if ((jumpX != null && NodeManager.instance.nodes[jumpX.gridX, jumpX.gridY].isObs) ||
+                    (jumpY != null && NodeManager.instance.nodes[jumpY.gridX, jumpY.gridY].isObs))
+                {
+                    return null; // 이동 제한
+                }
+            }
+
+            // 대각선 방향으로 이동할 수 있으면 다음 노드 반환
+            if (jumpX != null || jumpY != null)
+            {
                 return nextNode;
+            }
         }
+
+        // 다음 노드로 재귀적으로 점프
         return Jump(nextNode, direction);
     }
 
@@ -131,8 +199,6 @@ public class JumpPointSearch : MonoBehaviour
 
         NodeManager.instance.searchNodes.Remove(node);
 
-        preSearchCount++;
-
         yield return waitForSeconds;
 
         if (node == NodeManager.instance.endNode)
@@ -141,36 +207,50 @@ public class JumpPointSearch : MonoBehaviour
             StopAllCoroutines();
         }
 
-        searchCount++;
-
         node.isSearch = true;
     }
 
-    private bool IsForcedNeighbor(Node node, Vector2 direction)
+    private bool IsForcedNeighbor(Node currentNode, Node nextNode, Vector2 direction)
     {
-        int x = node.gridX;
-        int y = node.gridY;
+        int cx = currentNode.gridX;
+        int cy = currentNode.gridY;
+        int nx = nextNode.gridX;
+        int ny = nextNode.gridY;
 
         if (direction.x != 0 && direction.y == 0)
         {
-            if ((!NodeManager.instance.IsWithinBounds(x, y + 1) || NodeManager.instance.nodes[x, y + 1].isObs) &&
-                NodeManager.instance.IsWithinBounds(x + (int)direction.x, y + 1) && !NodeManager.instance.nodes[x + (int)direction.x, y + 1].isObs)
+            // 수평 이동 시
+            if ((NodeManager.instance.IsWithinBounds(cx, cy + 1) && NodeManager.instance.nodes[cx, cy + 1].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx, ny + 1) && !NodeManager.instance.nodes[nx, ny + 1].isObs) ||
+                (NodeManager.instance.IsWithinBounds(cx, cy - 1) && NodeManager.instance.nodes[cx, cy - 1].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx, ny - 1) && !NodeManager.instance.nodes[nx, ny - 1].isObs))
+            {
                 return true;
-
-            if ((!NodeManager.instance.IsWithinBounds(x, y - 1) || NodeManager.instance.nodes[x, y - 1].isObs) &&
-                NodeManager.instance.IsWithinBounds(x + (int)direction.x, y - 1) && !NodeManager.instance.nodes[x + (int)direction.x, y - 1].isObs)
-                return true;
+            }
         }
-        else if (direction.y != 0 && direction.x == 0)
+        else if (direction.x == 0 && direction.y != 0)
         {
-            if ((!NodeManager.instance.IsWithinBounds(x + 1, y) || NodeManager.instance.nodes[x + 1, y].isObs) &&
-                NodeManager.instance.IsWithinBounds(x + 1, y + (int)direction.y) && !NodeManager.instance.nodes[x + 1, y + (int)direction.y].isObs)
+            // 수직 이동 시
+            if ((NodeManager.instance.IsWithinBounds(cx + 1, cy) && NodeManager.instance.nodes[cx + 1, cy].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx + 1, ny) && !NodeManager.instance.nodes[nx + 1, ny].isObs) ||
+                (NodeManager.instance.IsWithinBounds(cx - 1, cy) && NodeManager.instance.nodes[cx - 1, cy].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx - 1, ny) && !NodeManager.instance.nodes[nx - 1, ny].isObs))
+            {
                 return true;
-
-            if ((!NodeManager.instance.IsWithinBounds(x - 1, y) || NodeManager.instance.nodes[x - 1, y].isObs) &&
-                NodeManager.instance.IsWithinBounds(x - 1, y + (int)direction.y) && !NodeManager.instance.nodes[x - 1, y + (int)direction.y].isObs)
-                return true;
+            }
         }
+        else if (direction.x != 0 && direction.y != 0)
+        {
+            // 대각선 이동 시
+            if ((NodeManager.instance.IsWithinBounds(cx - (int)direction.x, cy) && NodeManager.instance.nodes[cx - (int)direction.x, cy].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx - (int)direction.x, ny) && !NodeManager.instance.nodes[nx - (int)direction.x, ny].isObs) ||
+                (NodeManager.instance.IsWithinBounds(cx, cy - (int)direction.y) && NodeManager.instance.nodes[cx, cy - (int)direction.y].isObs &&
+                 NodeManager.instance.IsWithinBounds(nx, ny - (int)direction.y) && !NodeManager.instance.nodes[nx, ny - (int)direction.y].isObs))
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -188,82 +268,36 @@ public class JumpPointSearch : MonoBehaviour
 
     private List<Vector2> GetDirections(Node node)
     {
-        Vector3 pos = node.transform.position;
         List<Vector2> directions = new List<Vector2>
-    {
-        Vector2.up,
-        Vector2.down,
-        Vector2.left,
-        Vector2.right
-    };
-
-        void AddDiagonalDirection(Vector2 direction)
         {
-            bool isValidDirection = false; // ������ ��ȿ���� Ȯ���ϴ� ���� �߰�
-            foreach (Transform t in NodeManager.instance.nodeTransforms)
-            {
-                if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y + 1))
-                {
-                    bool isLeftObs = false;
-                    bool isBelowObs = false;
-                    isLeftObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x - 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
-                    isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
+            Vector2.up,
+            Vector2.down,
+            Vector2.left,
+            Vector2.right
+        };
 
-                    if (!isLeftObs || !isBelowObs)
-                    {
-                        isValidDirection = true;
-                    }
-                }
-                else if (Mathf.Approximately(pos.x, t.position.x + 1) && Mathf.Approximately(pos.y, t.position.y - 1))
-                {
-                    bool isAboveObs = false;
-                    bool isLeftObs = false;
-                    isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
-                    isLeftObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x - 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
+        void AddDiagonalDirection(Vector2 direction, Vector2 check1, Vector2 check2)
+        {
+            int x1 = node.gridX + (int)check1.x;
+            int y1 = node.gridY + (int)check1.y;
+            int x2 = node.gridX + (int)check2.x;
+            int y2 = node.gridY + (int)check2.y;
 
-                    if (!isAboveObs || !isLeftObs)
-                    {
-                        isValidDirection = true;
-                    }
-                }
-                else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y + 1))
-                {
-                    bool isRightObs = false;
-                    bool isBelowObs = false;
-                    isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
-                    isBelowObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y - 1))?.GetComponent<Node>().isObs ?? true;
+            bool check1Valid = NodeManager.instance.IsWithinBounds(x1, y1) && !NodeManager.instance.nodes[x1, y1].isObs;
+            bool check2Valid = NodeManager.instance.IsWithinBounds(x2, y2) && !NodeManager.instance.nodes[x2, y2].isObs;
 
-                    if (!isRightObs || !isBelowObs)
-                    {
-                        isValidDirection = true;
-                    }
-                }
-                else if (Mathf.Approximately(pos.x, t.position.x - 1) && Mathf.Approximately(pos.y, t.position.y - 1))
-                {
-                    bool isRightObs = false;
-                    bool isAboveObs = false;
-                    isRightObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x + 1) && Mathf.Approximately(x.position.y, pos.y))?.GetComponent<Node>().isObs ?? true;
-                    isAboveObs = NodeManager.instance.nodeTransforms.Find(x => Mathf.Approximately(x.position.x, pos.x) && Mathf.Approximately(x.position.y, pos.y + 1))?.GetComponent<Node>().isObs ?? true;
-
-                    if (!isRightObs || !isAboveObs)
-                    {
-                        isValidDirection = true;
-                    }
-                }
-            }
-
-            if (isValidDirection) // ��� ������ ������ ���� ���� �߰�
+            // 해당 대각선 방향의 주변에 장애물이 없고, 두 직선 경로가 모두 유효할 때 대각선 방향 추가
+            if (check1Valid || check2Valid)
             {
                 directions.Add(direction);
             }
         }
 
-        AddDiagonalDirection(Vector2.up + Vector2.left);
-        AddDiagonalDirection(Vector2.up + Vector2.right);
-        AddDiagonalDirection(Vector2.down + Vector2.left);
-        AddDiagonalDirection(Vector2.down + Vector2.right);
+        AddDiagonalDirection(Vector2.up + Vector2.left, Vector2.left, Vector2.up);
+        AddDiagonalDirection(Vector2.up + Vector2.right, Vector2.right, Vector2.up);
+        AddDiagonalDirection(Vector2.down + Vector2.left, Vector2.left, Vector2.down);
+        AddDiagonalDirection(Vector2.down + Vector2.right, Vector2.right, Vector2.down);
 
         return directions;
     }
-
 }

@@ -237,6 +237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isActive: 0
   nodeTransforms: []
+  searchNodes: []
   pathMat: {fileID: 2100000, guid: 79f1210b54e9314468fe87e1b7a8e934, type: 2}
   normalMat: {fileID: 2100000, guid: 7d2beae1170bd504ca3b1dbb0e328e8e, type: 2}
   obsMat: {fileID: 2100000, guid: 9aef14858fb096c43a11aa68cb71f000, type: 2}
@@ -419,7 +420,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d2f995bb3407c54eb038f7c576eeafb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  applyHeuristic: 1
+  visualizeRecursion: 1
   curNode: {fileID: 0}
 --- !u!1 &1148156616
 GameObject:
