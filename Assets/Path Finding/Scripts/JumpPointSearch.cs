@@ -223,6 +223,10 @@ public class JumpPointSearch : MonoBehaviour
             {
                 return true;
             }
+            else
+            {
+                return false;
+            }
         }
 
         return false; // 대각선 방향으로 이동 가능
