@@ -106,7 +106,7 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
         string msgs = "";
         for (int i = 0; i < senders.Length; i++)
         {
-            msgs = string.Format("{0}: {1}", senders[i], messages[i]);
+            msgs = string.Format("{0} : {1}", senders[i], messages[i]);
             chatDisplay.text += "\n" + msgs;
             Debug.Log(msgs);
         }
